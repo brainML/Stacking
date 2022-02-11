@@ -16,8 +16,6 @@ def CV_ind(n, n_folds):
 
 def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=4, score_f=R2):
 
-    data = zscore(data)
-
     # INPUTS: data (ntime*nvoxels), features (list of ntime*ndim), method = what to use to train,
     #         n_folds = number of cross-val folds
 
@@ -135,11 +133,12 @@ def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=4, score_
             )
 
     # compute overall
+    data_zscored = zscore(data)
     for FEATURE in range(n_features):
-        r2s[FEATURE, :] = score_f(preds_test[FEATURE], data)
-        r2s_weighted[FEATURE, :] = score_f(weighted_pred[FEATURE], data)
+        r2s[FEATURE, :] = score_f(preds_test[FEATURE], data_zscored)
+        r2s_weighted[FEATURE, :] = score_f(weighted_pred[FEATURE], data_zscored)
 
-    stacked_r2s = score_f(stacked_pred, data)
+    stacked_r2s = score_f(stacked_pred, data_zscored)
 
     r2s_train = r2s_train_folds.mean(0)
     stacked_train = stacked_train_r2s_fold.mean(0)
