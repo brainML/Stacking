@@ -13,6 +13,43 @@ def CV_ind(n, n_folds):
     ind[(n_folds - 1) * n_items :] = n_folds - 1
     return ind
 
+def feat_ridge_CV(train_feature,train_data,test_feature,method='cross_val_ridge',n_folds=10):
+    
+    if np.all(train_feature==0): #if zero predictor
+        weights = np.zeros((train_feature.shape[1],train_data.shape[1]))
+        preds_train = np.zeros_like(train_data)
+    else:
+        ind_nested = CV_ind(train_data.shape[0], n_folds=n_folds)
+        preds_train = np.zeros_like(train_data)
+        
+        for i_nested in range(n_folds):
+            train_data_nested = np.nan_to_num(zscore(train_data[ind_nested!=i_nested]))
+            train_features_nested = np.nan_to_num(zscore(train_feature[ind_nested!=i_nested]))
+            test_features_nested = np.nan_to_num(zscore(train_feature[ind_nested==i_nested]))
+            
+            weights = ridge(train_features_nested,train_data_nested, 1)
+        
+            if method =='simple_ridge':
+                weights = ridge(train_feature,train_data, 100)
+            elif method == 'cross_val_ridge':
+                if train_feature.shape[1]>train_feature.shape[0]:
+                    weights, __ = cross_val_ridge(train_features_nested,train_data_nested, n_splits = 10, 
+                                          lambdas = np.array([10**i for i in range(-6,10)]),
+                                          do_plot = False,method = 'plain')
+                else: 
+                    weights, __ = cross_val_ridge(train_features_nested,train_data_nested, n_splits = 10, 
+                                          lambdas = np.array([10**i for i in range(-6,10)]),
+                                          do_plot = False,method = 'plain')
+            preds_train[ind_nested==i_nested] = test_features_nested.dot(weights)
+
+    err = train_data - preds_train
+
+    preds_test = np.dot(test_feature, weights)
+    r2s_train_fold = score_f(preds_train, train_data)
+    var_train_fold = np.var(preds_train, axis=0)
+    
+    return preds_train, err, preds_test, r2s_train_fold, var_train_fold
+
 
 def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=4, score_f=R2):
 
@@ -60,7 +97,8 @@ def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=4, score_
 
         err = dict()
         preds_train = dict()
-
+        
+        '''
         for FEATURE in range(n_features):
             if method == "simple_ridge":
                 weights = ridge(train_features[FEATURE], train_data, 100)
@@ -81,6 +119,21 @@ def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=4, score_
             r2s_train_folds[ind_num, FEATURE, :] = score_f(
                 preds_train[FEATURE], train_data
             )
+            '''
+        
+        for FEATURE in range(n_features):
+            (
+                preds_train[FEATURE],
+                error,
+                preds_test[FEATURE, test_ind],
+                r2s_train_folds[ind_num, FEATURE, :],
+                var_train_folds[ind_num, FEATURE, :],
+            ) = feat_ridge_CV(
+                train_features[FEATURE],
+                train_data,
+                test_features[FEATURE],
+                method=method,
+            )         
 
         # calculate error matrix for stacking
         P = np.zeros((n_voxels, n_features, n_features))
