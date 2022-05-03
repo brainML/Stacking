@@ -43,6 +43,11 @@ def feat_ridge_CV(train_feature,train_data,test_feature,method='cross_val_ridge'
             preds_train[ind_nested==i_nested] = test_features_nested.dot(weights)
 
     err = train_data - preds_train
+    
+    # retrain weights on all training data:
+    weights, __ = cross_val_ridge(train_features,train_data, n_splits = 10, 
+                                          lambdas = np.array([10**i for i in range(-6,10)]),
+                                          do_plot = False,method = 'plain')
 
     preds_test = np.dot(test_feature, weights)
     r2s_train_fold = score_f(preds_train, train_data)
