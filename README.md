@@ -20,8 +20,8 @@ We provide examples of how to use the package in jupyter notebooks:
 - variance_partitioning.ipynb
 
 
-## Project Status
-Project is: _complete_ 
+<!-- ## Project Status
+Project is: _complete_  -->
 
 
 ## Contributions
