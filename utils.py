@@ -6,7 +6,6 @@ from scipy import signal
 from scipy.stats import zscore
 from scipy.ndimage.filters import gaussian_filter
 
-### FIXME: is there a smarter way to do this? Maybe a util 
 import platform
 location = platform.system()
 dirct = dict(collab =  '/content/gdrive/My Drive/',
@@ -35,26 +34,6 @@ def delay_mat(mat, delays):
 
  
 import csv
-
-# with open(dirct + 'data/HP/meg/locations.txt', 'r') as f:
-#     locs = csv.reader(f,delimiter=',')
-#     loc306 = np.array([[float(w1[0].split(' ')[1]),float(w1[0].split(' ')[2])] for w1 in locs ])
-
-# loc102 = loc306[::3]
-
-# from sklearn.metrics.pairwise import euclidean_distances
-
-# dists = euclidean_distances(loc102, loc306)
-
-# neighbors = np.argsort(dists,axis = 1)
-
-# neighbors = neighbors[:,:27]
-
-# sensor_groups = np.zeros((102,306))
-
-# for i in range(102):
-#     sensor_groups[i,neighbors[i]] = 1
-
 
 
 def topoplot(mat, nrow = 4, ncol = 5, time_step = 25, time_start = 0, cmap = 'RdBu_r',
@@ -202,9 +181,3 @@ def load_and_process(file,start_trim = 20, end_trim = 15, do_detrend=True, smoot
         dat = np.nan_to_num(zscore(dat))
         dat = smooth_run_not_masked(dat, smoothing_factor)
         
-    # zscore
-    if do_zscore:
-        dat = np.nan_to_num(zscore(dat))
-        
-
-    return dat
