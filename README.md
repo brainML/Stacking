@@ -17,7 +17,7 @@ We provide examples of how to use the package in jupyter notebooks:
 
 - stacking_tutorial.ipynb
 
--variance_partitioning.ipynb
+- variance_partitioning.ipynb
 
 
 ## Project Status
