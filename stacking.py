@@ -15,7 +15,7 @@ def CV_ind(n, n_folds):
 
 
 def feat_ridge_CV(
-    train_feature, train_data, test_feature, method="cross_val_ridge", n_folds=10
+    train_feature, train_data, test_feature, method="cross_val_ridge", n_folds=5
 ):
 
     if np.all(train_feature == 0):  # if zero predictor
@@ -80,7 +80,7 @@ def feat_ridge_CV(
     return preds_train, err, preds_test, r2s_train_fold, var_train_fold
 
 
-def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=4, score_f=R2):
+def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=5, score_f=R2):
 
     # INPUTS: data (ntime*nvoxels), features (list of ntime*ndim), method = what to use to train,
     #         n_folds = number of cross-val folds
