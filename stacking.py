@@ -45,7 +45,7 @@ def feat_ridge_CV(
                     weights, __ = cross_val_ridge(
                         train_features_nested,
                         train_data_nested,
-                        n_splits=10,
+                        n_splits=5,
                         lambdas=np.array([10 ** i for i in range(-6, 10)]),
                         do_plot=False,
                         method="plain",
@@ -54,7 +54,7 @@ def feat_ridge_CV(
                     weights, __ = cross_val_ridge(
                         train_features_nested,
                         train_data_nested,
-                        n_splits=10,
+                        n_splits=5,
                         lambdas=np.array([10 ** i for i in range(-6, 10)]),
                         do_plot=False,
                         method="plain",
@@ -67,7 +67,7 @@ def feat_ridge_CV(
     weights, __ = cross_val_ridge(
         train_features,
         train_data,
-        n_splits=10,
+        n_splits=5,
         lambdas=np.array([10 ** i for i in range(-6, 10)]),
         do_plot=False,
         method="plain",
