@@ -97,7 +97,7 @@ def stacking_fmri(
     # INPUTS: data (ntime*nvoxels), features (list of ntime*ndim), method = what to use to train,
     #         n_folds = number of cross-val folds
 
-    n_time_test = train_data.shape[0]
+    n_time_test = test_data.shape[0]
 
     assert train_data.shape[1] == test_data.shape[1]
     n_voxels = train_data.shape[1]
