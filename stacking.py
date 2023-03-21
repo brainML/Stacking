@@ -142,7 +142,7 @@ def stacking_fmri(
             test_features[FEATURE],
             method=method,
         )
-    err[FEATURE] = error
+        err[FEATURE] = error
 
     # calculate error matrix for stacking
     P = np.zeros((n_voxels, n_features, n_features))
