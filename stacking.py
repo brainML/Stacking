@@ -15,7 +15,12 @@ def CV_ind(n, n_folds):
 
 
 def feat_ridge_CV(
-    train_feature, train_data, test_feature, method="cross_val_ridge", n_folds=5
+    train_feature,
+    train_data,
+    test_feature,
+    method="cross_val_ridge",
+    n_folds=5,
+    score_f=R2,
 ):
 
     if np.all(train_feature == 0):  # if zero predictor
@@ -65,7 +70,7 @@ def feat_ridge_CV(
 
     # retrain weights on all training data:
     weights, __ = cross_val_ridge(
-        train_features,
+        train_feature,
         train_data,
         n_splits=5,
         lambdas=np.array([10 ** i for i in range(-6, 10)]),
@@ -78,6 +83,125 @@ def feat_ridge_CV(
     var_train_fold = np.var(preds_train, axis=0)
 
     return preds_train, err, preds_test, r2s_train_fold, var_train_fold
+
+
+def stacking_fmri(
+    train_data,
+    test_data,
+    train_features,
+    test_features,
+    method="cross_val_ridge",
+    score_f=R2,
+):
+
+    # INPUTS: data (ntime*nvoxels), features (list of ntime*ndim), method = what to use to train,
+    #         n_folds = number of cross-val folds
+
+    n_time_test = train_data.shape[0]
+
+    assert train_data.shape[1] == test_data.shape[1]
+    n_voxels = train_data.shape[1]
+
+    assert len(train_features) == len(test_features)
+    n_features = len(train_features)
+
+    # easier to store r2s in an array and access them programatically than to maintain a different
+    # variable for each
+
+    r2s = np.zeros((n_features, n_voxels))
+    r2s_train = np.zeros((n_features, n_voxels))
+    var_train = np.zeros((n_features, n_voxels))
+    r2s_weighted = np.zeros((n_features, n_voxels))
+
+    # store predictions in array
+    stacked_pred = np.zeros((n_time_test, n_voxels))
+    preds_test = np.zeros((n_features, n_time_test, n_voxels))
+    weighted_pred = np.zeros((n_features, n_time_test, n_voxels))
+    S_average = np.zeros((n_voxels, n_features))
+
+    # normalize data  by TRAIN/TEST
+    train_data = np.nan_to_num(zscore(train_data))
+    test_data = np.nan_to_num(zscore(test_data))
+
+    train_features = [np.nan_to_num(zscore(F)) for F in train_features]
+    test_features = [np.nan_to_num(zscore(F)) for F in test_features]
+
+    err = dict()
+    preds_train = dict()
+
+    for FEATURE in range(n_features):
+        (
+            preds_train[FEATURE],
+            error,
+            preds_test[FEATURE, :, :],
+            r2s_train[FEATURE, :],
+            var_train[FEATURE, :],
+        ) = feat_ridge_CV(
+            train_features[FEATURE],
+            train_data,
+            test_features[FEATURE],
+            method=method,
+        )
+    err[FEATURE] = error
+
+    # calculate error matrix for stacking
+    P = np.zeros((n_voxels, n_features, n_features))
+    for i in range(n_features):
+        for j in range(n_features):
+            P[:, i, j] = np.mean(err[i] * err[j], 0)
+
+    # PROGRAMATICALLY SET THIS FROM THE NUMBER OF FEATURES
+    q = matrix(np.zeros((n_features)))
+    G = matrix(-np.eye(n_features, n_features))
+    h = matrix(np.zeros(n_features))
+    A = matrix(np.ones((1, n_features)))
+    b = matrix(np.ones(1))
+
+    S = np.zeros((n_voxels, n_features))
+
+    stacked_pred_train = np.zeros_like(train_data)
+
+    for i in range(0, n_voxels):
+
+        PP = matrix(P[i])
+        # solve for stacking weights for every voxel
+        S[i, :] = np.array(solvers.qp(PP, q, G, h, A, b)["x"]).reshape(
+            n_features,
+        )
+
+        # combine the predictions from the individual feature spaces for voxel i
+        z_test = np.array(
+            [preds_test[feature_j, :, i] for feature_j in range(n_features)]
+        )
+        z_train = np.array(
+            [preds_train[feature_j][:, i] for feature_j in range(n_features)]
+        )
+        # multiply the predictions by S[i,:]
+        stacked_pred[:, i] = np.dot(S[i, :], z_test)
+        # combine the training predictions from the individual feature spaces for voxel i
+        stacked_pred_train[:, i] = np.dot(S[i, :], z_train)
+
+    stacked_train_r2s = score_f(stacked_pred_train, train_data)
+
+    for FEATURE in range(n_features):
+        # weight the predictions according to S:
+        # weighted single feature space predictions, computed over a fold
+        weighted_pred[FEATURE, :] = preds_test[FEATURE, :] * S[:, FEATURE]
+
+    for FEATURE in range(n_features):
+        r2s[FEATURE, :] = score_f(preds_test[FEATURE], test_data)
+        r2s_weighted[FEATURE, :] = score_f(weighted_pred[FEATURE], test_data)
+
+    stacked_r2s = score_f(stacked_pred, test_data)
+
+    return (
+        r2s,
+        stacked_r2s,
+        r2s_weighted,
+        r2s_train,
+        stacked_train_r2s,
+        S,
+    )
 
 
 def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=5, score_f=R2):
@@ -96,6 +220,7 @@ def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=5, score_
 
     r2s = np.zeros((n_features, n_voxels))
     r2s_train_folds = np.zeros((n_folds, n_features, n_voxels))
+    var_train_folds = np.zeros((n_folds, n_features, n_voxels))
     r2s_weighted = np.zeros((n_features, n_voxels))
     stacked_train_r2s_fold = np.zeros((n_folds, n_voxels))
 
@@ -140,6 +265,8 @@ def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=5, score_
                 test_features[FEATURE],
                 method=method,
             )
+
+            err[FEATURE] = error
 
         # calculate error matrix for stacking
         P = np.zeros((n_voxels, n_features, n_features))
