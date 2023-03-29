@@ -309,7 +309,7 @@ def stacking_CV_fmri(data, features, method="cross_val_ridge", n_folds=5, score_
     stacked_pred = np.zeros((n_time, n_voxels))
     preds_test = np.zeros((n_features, n_time, n_voxels))
     weighted_pred = np.zeros((n_features, n_time, n_voxels))
-    S_average = np.zeros((n_features, n_voxels))
+    S_average = np.zeros((n_voxels, n_features))
 
     # perform cross-validation by fold
     for ind_num in range(n_folds):
