@@ -84,3 +84,10 @@ Contributions are welcome! Please feel free to submit a pull request with your c
 Created by [@lrg1213] - feel free to contact me!
 
 
+## References
+<a id="1">[1]</a> 
+Ruogu Lin, Thomas Naselaris, Kendrick Kay, and Leila Wehbe (2023). 
+Stacked regressions and structured variance partitioning for interpretable brain maps.
+
+
+
