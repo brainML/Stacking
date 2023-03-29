@@ -84,24 +84,6 @@ def ridge(X, Y, lmbda):
     return np.dot(inv(X.T.dot(X) + lmbda * np.eye(X.shape[1])), X.T.dot(Y))
 
 
-def lasso(X, Y, lmbda):
-    """Lasso function."""
-    return soft_ths(ols(X, Y), X.shape[0] * lmbda)
-
-
-def soft_ths(X, alpha):
-    """Soft thresholding."""
-    Y = np.zeros_like(X)
-    Y[X > alpha] = (X - alpha)[X > alpha]
-    Y[X < alpha] = (X + alpha)[X < alpha]
-    return Y
-
-
-def ols(X, Y):
-    """Compute ordinary least squares weights."""
-    return np.dot(np.linalg.pinv(X.T.dot(X)), X.T.dot(Y))
-
-
 def ridge_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
     """Compute validation errors for ridge regression with different lambda values."""
     error = np.zeros((lambdas.shape[0], Y.shape[1]))
@@ -109,24 +91,6 @@ def ridge_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000]))
         weights = ridge(X, Y, lmbda)
         error[idx] = 1 - R2(np.dot(Xval, weights), Yval)
     return error
-
-
-def lasso_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
-    """Compute validation errors for lasso regression with different lambda values."""
-    error = np.zeros((lambdas.shape[0], Y.shape[1]))
-    for idx, lmbda in enumerate(lambdas):
-        weights = lasso(X, Y, lmbda)
-        error[idx] = 1 - R2(np.dot(Xval, weights), Yval)
-    return error
-
-
-def ols_err(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
-    """Compute validation errors for OLS."""
-    error = np.zeros(Y.shape[1])
-    weights = ols(X, Y)
-    error = 1 - R2(np.dot(Xval, weights), Yval)
-    return error
-
 
 def ridge_sk(X, Y, lmbda):
     """Compute ridge regression weights using scikit-learn."""
