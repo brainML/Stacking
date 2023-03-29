@@ -1,34 +1,45 @@
-# Functions to estimate cost for each lambda, by voxel:
 from __future__ import division
 
-from numpy.linalg import inv, svd
+import time
 import numpy as np
+from scipy.stats import zscore
+from numpy.linalg import inv, svd
 from sklearn.model_selection import KFold
 from sklearn.linear_model import Ridge, RidgeCV
-import time
-from scipy.stats import zscore
 
 
 def corr(X, Y, axis=0):
-    # correlation coefficient
+    """Compute correlation coefficient."""
     return np.mean(zscore(X) * zscore(Y), axis)
 
 
 def R2(Pred, Real):
-    # coefficient of determination
-    # R^2 = 1 -  residual sum of squares/total sum of squares
+    """Compute coefficient of determination (R^2)."""
     SSres = np.mean((Real - Pred) ** 2, 0)
     SStot = np.var(Real, 0)
     return np.nan_to_num(1 - SSres / SStot)
 
 
 def fit_predict(data, features, method="plain", n_folds=10):
+    """
+    Fit and predict using cross-validated Ridge regression.
+
+    Args:
+        data (numpy.ndarray): The data array.
+        features (numpy.ndarray): The features array.
+        method (str): The Ridge regression method. Defaults to 'plain'.
+        n_folds (int): The number of folds for cross-validation. Defaults to 10.
+
+    Returns:
+        tuple: Tuple containing the correlation and R^2 values.
+    """
     n, v = data.shape
     p = features.shape[1]
     corrs = np.zeros((n_folds, v))
     R2s = np.zeros((n_folds, v))
     ind = CV_ind(n, n_folds)
     preds_all = np.zeros_like(data)
+
     for i in range(n_folds):
         train_data = np.nan_to_num(zscore(data[ind != i]))
         train_features = np.nan_to_num(zscore(features[ind != i]))
@@ -37,64 +48,62 @@ def fit_predict(data, features, method="plain", n_folds=10):
         weights, __ = cross_val_ridge(train_features, train_data, method=method)
         preds = np.dot(test_features, weights)
         preds_all[ind == i] = preds
-    #         print("fold {}".format(i))
+
     corrs = corr(preds_all, data)
     R2s = R2(preds_all, data)
+
     return corrs, R2s
 
 
 def CV_ind(n, n_folds):
+    """Generate cross-validation indices."""
     ind = np.zeros((n))
     n_items = int(np.floor(n / n_folds))
+
     for i in range(0, n_folds - 1):
         ind[i * n_items : (i + 1) * n_items] = i
+
     ind[(n_folds - 1) * n_items :] = n_folds - 1
+
     return ind
 
 
 def R2r(Pred, Real):
-    # square root of R^2
+    """Compute square root of R^2."""
     R2rs = R2(Pred, Real)
-    ind_neg = R2rs < 0  # pick out negative ones
-    R2rs = np.abs(R2rs)  # use absolute value to calculate sqaure root
+    ind_neg = R2rs < 0
+    R2rs = np.abs(R2rs)
     R2rs = np.sqrt(R2rs)
-    R2rs[ind_neg] *= -1  # recover negative data
+    R2rs[ind_neg] *= -1
+
     return R2rs
 
 
 def ridge(X, Y, lmbda):
-    # weight of ridge regression
+    """Compute ridge regression weights."""
     return np.dot(inv(X.T.dot(X) + lmbda * np.eye(X.shape[1])), X.T.dot(Y))
 
 
 def lasso(X, Y, lmbda):
+    """Lasso function."""
     return soft_ths(ols(X, Y), X.shape[0] * lmbda)
 
 
 def soft_ths(X, alpha):
+    """Soft thresholding."""
     Y = np.zeros_like(X)
     Y[X > alpha] = (X - alpha)[X > alpha]
     Y[X < alpha] = (X + alpha)[X < alpha]
-
     return Y
 
 
-# def soft_threshold(alpha, beta):
-#     if beta > alpha:
-#         return beta - alpha
-#     elif beta < -alpha:
-#         return beta + alpha
-#     else:
-#         return 0
-
-
 def ols(X, Y):
+    """Compute ordinary least squares weights."""
     return np.dot(np.linalg.pinv(X.T.dot(X)), X.T.dot(Y))
-    # return np.linalg.inv(X.T @ X) @ (X.T @ Y)
 
 
 def ridge_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
-    # validation error of ridge regression under different lambdas
+    """Compute validation errors for ridge regression with different lambda values."""
     error = np.zeros((lambdas.shape[0], Y.shape[1]))
     for idx, lmbda in enumerate(lambdas):
         weights = ridge(X, Y, lmbda)
@@ -103,7 +112,7 @@ def ridge_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000]))
 
 
 def lasso_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
-    # validation error of ridge regression under different lambdas
+    """Compute validation errors for lasso regression with different lambda values."""
     error = np.zeros((lambdas.shape[0], Y.shape[1]))
     for idx, lmbda in enumerate(lambdas):
         weights = lasso(X, Y, lmbda)
@@ -112,6 +121,7 @@ def lasso_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000]))
 
 
 def ols_err(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
+    """Compute validation errors for OLS."""
     error = np.zeros(Y.shape[1])
     weights = ols(X, Y)
     error = 1 - R2(np.dot(Xval, weights), Yval)
@@ -119,18 +129,21 @@ def ols_err(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
 
 
 def ridge_sk(X, Y, lmbda):
+    """Compute ridge regression weights using scikit-learn."""
     rd = Ridge(alpha=lmbda)
     rd.fit(X, Y)
     return rd.coef_.T
 
 
 def ridgeCV_sk(X, Y, lmbdas):
+    """Compute ridge regression weights using scikit-learn with cross-validation."""
     rd = RidgeCV(alphas=lmbdas, solver="svd")
     rd.fit(X, Y)
     return rd.coef_.T
 
 
 def ridge_by_lambda_sk(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
+    """Compute validation errors for ridge regression with different lambda values using scikit-learn."""
     error = np.zeros((lambdas.shape[0], Y.shape[1]))
     for idx, lmbda in enumerate(lambdas):
         weights = ridge_sk(X, Y, lmbda)
@@ -139,26 +152,38 @@ def ridge_by_lambda_sk(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000
 
 
 def ridge_svd(X, Y, lmbda):
+    """
+    Ridge regression using singular value decomposition (SVD).
+    """
     U, s, Vt = svd(X, full_matrices=False)
-    d = s / (s ** 2 + lmbda)
+    d = s / (s**2 + lmbda)
     return np.dot(Vt, np.diag(d).dot(U.T.dot(Y)))
 
 
 def ridge_by_lambda_svd(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
+    """
+    Calculate the validation error of ridge regression using SVD for different lambdas.
+    """
     error = np.zeros((lambdas.shape[0], Y.shape[1]))
     U, s, Vt = svd(X, full_matrices=False)
     for idx, lmbda in enumerate(lambdas):
-        d = s / (s ** 2 + lmbda)
+        d = s / (s**2 + lmbda)
         weights = np.dot(Vt, np.diag(d).dot(U.T.dot(Y)))
         error[idx] = 1 - R2(np.dot(Xval, weights), Yval)
     return error
 
 
 def kernel_ridge(X, Y, lmbda):
+    """
+    Kernel ridge regression.
+    """
     return np.dot(X.T.dot(inv(X.dot(X.T) + lmbda * np.eye(X.shape[0]))), Y)
 
 
 def kernel_ridge_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
+    """
+    Calculate the validation error of kernel ridge regression for different lambdas.
+    """
     error = np.zeros((lambdas.shape[0], Y.shape[1]))
     for idx, lmbda in enumerate(lambdas):
         weights = kernel_ridge(X, Y, lmbda)
@@ -167,18 +192,24 @@ def kernel_ridge_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 
 
 
 def kernel_ridge_svd(X, Y, lmbda):
+    """
+    Kernel ridge regression using singular value decomposition (SVD).
+    """
     U, s, Vt = svd(X.T, full_matrices=False)
-    d = s / (s ** 2 + lmbda)
+    d = s / (s**2 + lmbda)
     return np.dot(np.dot(U, np.diag(d).dot(Vt)), Y)
 
 
 def kernel_ridge_by_lambda_svd(
     X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])
 ):
+    """
+    Calculate the validation error of kernel ridge regression using SVD for different lambdas.
+    """
     error = np.zeros((lambdas.shape[0], Y.shape[1]))
     U, s, Vt = svd(X.T, full_matrices=False)
     for idx, lmbda in enumerate(lambdas):
-        d = s / (s ** 2 + lmbda)
+        d = s / (s**2 + lmbda)
         weights = np.dot(np.dot(U, np.diag(d).dot(Vt)), Y)
         error[idx] = 1 - R2(np.dot(Xval, weights), Yval)
     return error
@@ -188,28 +219,42 @@ def cross_val_ridge(
     train_features,
     train_data,
     n_splits=10,
-    lambdas=np.array([10 ** i for i in range(-6, 10)]),
+    lambdas=np.array([10**i for i in range(-6, 10)]),
     method="plain",
     do_plot=False,
 ):
-    # cross validation for ridge regression
+    """
+    Cross validation for ridge regression.
 
-    ridge_1 = dict(
-        plain=ridge_by_lambda,
-        svd=ridge_by_lambda_svd,
-        kernel_ridge=kernel_ridge_by_lambda,
-        kernel_ridge_svd=kernel_ridge_by_lambda_svd,
-        ridge_sk=ridge_by_lambda_sk,
-    )[
+    Args:
+        train_features (array): Array of training features.
+        train_data (array): Array of training data.
+        lambdas (array): Array of lambda values for Ridge regression.
+                          Default is [10^i for i in range(-6, 10)].
+
+    Returns:
+        weightMatrix (array): Array of weights for the Ridge regression.
+        r (array): Array of regularization parameters.
+
+    """
+
+    ridge_1 = {
+        "plain": ridge_by_lambda,
+        "svd": ridge_by_lambda_svd,
+        "kernel_ridge": kernel_ridge_by_lambda,
+        "kernel_ridge_svd": kernel_ridge_by_lambda_svd,
+        "ridge_sk": ridge_by_lambda_sk,
+    }[
         method
     ]  # loss of the regressor
-    ridge_2 = dict(
-        plain=ridge,
-        svd=ridge_svd,
-        kernel_ridge=kernel_ridge,
-        kernel_ridge_svd=kernel_ridge_svd,
-        ridge_sk=ridge_sk,
-    )[
+
+    ridge_2 = {
+        "plain": ridge,
+        "svd": ridge_svd,
+        "kernel_ridge": kernel_ridge,
+        "kernel_ridge_svd": kernel_ridge_svd,
+        "ridge_sk": ridge_sk,
+    }[
         method
     ]  # solver for the weights
 
@@ -220,7 +265,6 @@ def cross_val_ridge(
     kf = KFold(n_splits=n_splits)  # set up dataset for cross validation
     start_t = time.time()  # record start time
     for icv, (trn, val) in enumerate(kf.split(train_data)):
-        # print('ntrain = {}'.format(train_features[trn].shape[0]))
         cost = ridge_1(
             train_features[trn],
             train_data[trn],
@@ -228,15 +272,15 @@ def cross_val_ridge(
             train_data[val],
             lambdas=lambdas,
         )  # loss of regressor 1
+
         if do_plot:
             import matplotlib.pyplot as plt
 
             plt.figure()
             plt.imshow(cost, aspect="auto")
+
         r_cv += cost
-    #         if icv%3 ==0:
-    #             print(icv)
-    #         print('average iteration length {}'.format((time.time()-start_t)/(icv+1))) # time used
+
     if do_plot:  # show loss
         plt.figure()
         plt.imshow(r_cv, aspect="auto", cmap="RdBu_r")
@@ -252,6 +296,7 @@ def cross_val_ridge(
         weights[:, idx_vox] = ridge_2(
             train_features, train_data[:, idx_vox], lambdas[idx_lambda]
         )
+
     if do_plot:  # show the weights
         plt.figure()
         plt.imshow(weights, aspect="auto", cmap="RdBu_r", vmin=-0.5, vmax=0.5)
@@ -263,29 +308,31 @@ def cross_val_lasso(
     train_features,
     train_data,
     n_splits=10,
-    lambdas=np.array([10 ** i for i in range(-6, 10)]),
+    lambdas=np.array([10**i for i in range(-6, 10)]),
     method="plain",
     do_plot=False,
 ):
-    # cross validation for ridge regression
+    """
+    Perform cross-validation for Lasso regression.
 
-    # ridge_1 = dict(plain = ridge_by_lambda,
-    #                svd = ridge_by_lambda_svd,
-    #                kernel_ridge = kernel_ridge_by_lambda,
-    #                kernel_ridge_svd = kernel_ridge_by_lambda_svd,
-    #                ridge_sk = ridge_by_lambda_sk)[method] #loss of the regressor
-    # ridge_2 = dict(plain = ridge,
-    #                svd = ridge_svd,
-    #                kernel_ridge = kernel_ridge,
-    #                kernel_ridge_svd = kernel_ridge_svd,
-    #                ridge_sk = ridge_sk)[method] # solver for the weights
+    Args:
+        train_features (array): Array of training features.
+        train_data (array): Array of training data.
+        lambdas (array): Array of lambda values for Lasso regression.
+                          Default is [10^i for i in range(-6, 10)].
 
-    n_voxels = train_data.shape[1]  # get number of voxels from data
-    nL = lambdas.shape[0]  # get number of hyperparameter (lambdas) from setting
-    r_cv = np.zeros((nL, train_data.shape[1]))  # loss matrix
+    Returns:
+        weightMatrix (array): Array of weights for the Lasso regression.
+        r (array): Array of regularization parameters.
+    """
 
-    kf = KFold(n_splits=n_splits)  # set up dataset for cross validation
-    start_t = time.time()  # record start time
+    n_voxels = train_data.shape[1]
+    nL = lambdas.shape[0]
+    r_cv = np.zeros((nL, train_data.shape[1]))
+
+    kf = KFold(n_splits=n_splits)
+    start_t = time.time()
+
     for icv, (trn, val) in enumerate(kf.split(train_data)):
         print("ntrain = {}".format(train_features[trn].shape[0]))
         cost = lasso_by_lambda(
@@ -294,7 +341,7 @@ def cross_val_lasso(
             train_features[val],
             train_data[val],
             lambdas=lambdas,
-        )  # loss of regressor 1
+        )
         if do_plot:
             import matplotlib.pyplot as plt
 
@@ -303,25 +350,22 @@ def cross_val_lasso(
         r_cv += cost
         if icv % 3 == 0:
             print(icv)
-        print(
-            "average iteration length {}".format((time.time() - start_t) / (icv + 1))
-        )  # time used
-    if do_plot:  # show loss
+        print("average iteration length {}".format((time.time() - start_t) / (icv + 1)))
+
+    if do_plot:
         plt.figure()
         plt.imshow(r_cv, aspect="auto", cmap="RdBu_r")
 
-    argmin_lambda = np.argmin(r_cv, axis=0)  # pick the best lambda
-    weights = np.zeros(
-        (train_features.shape[1], train_data.shape[1])
-    )  # initialize the weight
-    for idx_lambda in range(
-        lambdas.shape[0]
-    ):  # this is much faster than iterating over voxels!
+    argmin_lambda = np.argmin(r_cv, axis=0)
+    weights = np.zeros((train_features.shape[1], train_data.shape[1]))
+
+    for idx_lambda in range(lambdas.shape[0]):
         idx_vox = argmin_lambda == idx_lambda
         weights[:, idx_vox] = lasso(
             train_features, train_data[:, idx_vox], lambdas[idx_lambda]
         )
-    if do_plot:  # show the weights
+
+    if do_plot:
         plt.figure()
         plt.imshow(weights, aspect="auto", cmap="RdBu_r", vmin=-0.5, vmax=0.5)
 
@@ -332,38 +376,41 @@ def cross_val_ols(
     train_features,
     train_data,
     n_splits=10,
-    lambdas=np.array([10 ** i for i in range(-6, 10)]),
+    lambdas=np.array([10**i for i in range(-6, 10)]),
     method="plain",
     do_plot=False,
 ):
-    # cross validation for ridge regression
+    """
+    Cross-validation for ridge regression.
 
-    # ridge_1 = dict(plain = ridge_by_lambda,
-    #                svd = ridge_by_lambda_svd,
-    #                kernel_ridge = kernel_ridge_by_lambda,
-    #                kernel_ridge_svd = kernel_ridge_by_lambda_svd,
-    #                ridge_sk = ridge_by_lambda_sk)[method] #loss of the regressor
-    # ridge_2 = dict(plain = ridge,
-    #                svd = ridge_svd,
-    #                kernel_ridge = kernel_ridge,
-    #                kernel_ridge_svd = kernel_ridge_svd,
-    #                ridge_sk = ridge_sk)[method] # solver for the weights
+    Args:
+        train_features (array): Array of training features.
+        train_data (array): Array of training data.
+        lambdas (array): Array of lambda values for OLS regression.
+                          Default is [10^i for i in range(-6, 10)].
 
-    n_voxels = train_data.shape[1]  # get number of voxels from data
-    nL = lambdas.shape[0]  # get number of hyperparameter (lambdas) from setting
-    r_cv = np.zeros((nL, train_data.shape[1]))  # loss matrix
+    Returns:
+        weightMatrix (array): Array of weights for the OLS regression.
+        r (array): Array of regularization parameters.
+    """
 
-    kf = KFold(n_splits=n_splits)  # set up dataset for cross validation
-    start_t = time.time()  # record start time
+    n_voxels = train_data.shape[1]
+    nL = lambdas.shape[0]
+    r_cv = np.zeros((nL, train_data.shape[1]))
+
+    kf = KFold(n_splits=n_splits)
+
+    start_t = time.time()
     for icv, (trn, val) in enumerate(kf.split(train_data)):
-        print("ntrain = {}".format(train_features[trn].shape[0]))
+        print(f"ntrain = {train_features[trn].shape[0]}")
         cost = ols_err(
             train_features[trn],
             train_data[trn],
             train_features[val],
             train_data[val],
             lambdas=lambdas,
-        )  # loss of regressor 1
+        )
+
         if do_plot:
             import matplotlib.pyplot as plt
 
@@ -372,23 +419,20 @@ def cross_val_ols(
         r_cv += cost
         if icv % 3 == 0:
             print(icv)
-        print(
-            "average iteration length {}".format((time.time() - start_t) / (icv + 1))
-        )  # time used
-    if do_plot:  # show loss
+        print(f"average iteration length {(time.time() - start_t) / (icv + 1)}")
+
+    if do_plot:
         plt.figure()
         plt.imshow(r_cv, aspect="auto", cmap="RdBu_r")
 
-    argmin_lambda = np.argmin(r_cv, axis=0)  # pick the best lambda
-    weights = np.zeros(
-        (train_features.shape[1], train_data.shape[1])
-    )  # initialize the weight
-    for idx_lambda in range(
-        lambdas.shape[0]
-    ):  # this is much faster than iterating over voxels!
+    argmin_lambda = np.argmin(r_cv, axis=0)
+    weights = np.zeros((train_features.shape[1], train_data.shape[1]))
+
+    for idx_lambda in range(lambdas.shape[0]):
         idx_vox = argmin_lambda == idx_lambda
         weights[:, idx_vox] = ols(train_features, train_data[:, idx_vox])
-    if do_plot:  # show the weights
+
+    if do_plot:
         plt.figure()
         plt.imshow(weights, aspect="auto", cmap="RdBu_r", vmin=-0.5, vmax=0.5)
 
@@ -396,8 +440,21 @@ def cross_val_ols(
 
 
 def GCV_ridge(
-    train_features, train_data, lambdas=np.array([10 ** i for i in range(-6, 10)])
+    train_features, train_data, lambdas=np.array([10**i for i in range(-6, 10)])
 ):
+    """
+    Generalized Cross-Validation (GCV) for ridge regression.
+
+    Args:
+        train_features (array): Array of training features.
+        train_data (array): Array of training data.
+        lambdas (array): Array of lambda values for Ridge regression.
+                          Default is [10^i for i in range(-6, 10)].
+
+    Returns:
+        weightMatrix (array): Array of weights for the Ridge regression.
+        r (array): Array of regularization parameters.
+    """
 
     n_lambdas = lambdas.shape[0]
     n_voxels = train_data.shape[1]
@@ -406,13 +463,8 @@ def GCV_ridge(
 
     CVerr = np.zeros((n_lambdas, n_voxels))
 
-    # % If we do an eigendecomp first we can quickly compute the inverse for many different values
-    # % of lambda. SVD uses X = UDV' form.
-    # % First compute K0 = (X'X + lambda*I) where lambda = 0.
-    # K0 = np.dot(train_features,train_features.T)
-    print(
-        "Running svd",
-    )
+    # Perform SVD for faster computation of the inverse
+    print("Running svd")
     start_time = time.time()
     [U, D, Vt] = svd(train_features, full_matrices=False)
     V = Vt.T
@@ -420,11 +472,10 @@ def GCV_ridge(
     print("svd time: {}".format(time.time() - start_time))
 
     for i, regularizationParam in enumerate(lambdas):
-        regularizationParam = lambdas[i]
         print("CVLoop: Testing regularization param: {}".format(regularizationParam))
 
-        # Now we can obtain Kinv for any lambda doing Kinv = V * (D + lambda*I)^-1 U'
-        dlambda = D ** 2 + np.eye(n_p) * regularizationParam
+        # Compute Kinv for any lambda: Kinv = V * (D + lambda*I)^-1 U'
+        dlambda = D**2 + np.eye(n_p) * regularizationParam
         dlambdaInv = np.diag(D / np.diag(dlambda))
         KlambdaInv = V.dot(dlambdaInv).dot(U.T)
 
@@ -432,15 +483,15 @@ def GCV_ridge(
         S = np.dot(U, np.diag(D * np.diag(dlambdaInv))).dot(U.T)
         denum = 1 - np.trace(S) / n_time
 
-        # Solve for weight matrix so we can compute residual
+        # Solve for weight matrix to compute residual
         weightMatrix = KlambdaInv.dot(train_data)
 
-        #         Snorm = np.tile(1 - np.diag(S) , (n_voxels, 1)).T
+        # Calculate CV error
         YdiffMat = train_data - (train_features.dot(weightMatrix))
         YdiffMat = YdiffMat / denum
         CVerr[i, :] = (1 / n_time) * np.sum(YdiffMat * YdiffMat, 0)
 
-    # try using min of avg err
+    # Find the minimum CV error index
     minerrIndex = np.argmin(CVerr, axis=0)
     r = np.zeros((n_voxels))
 
@@ -453,8 +504,8 @@ def GCV_ridge(
                     int(len(ind) / n_voxels * 100), regularizationParam
                 )
             )
-            # got good param, now obtain weights
-            dlambda = D ** 2 + np.eye(n_p) * regularizationParam
+            # Compute weights with good regularization parameter
+            dlambda = D**2 + np.eye(n_p) * regularizationParam
             dlambdaInv = np.diag(D / np.diag(dlambda))
             KlambdaInv = V.dot(dlambdaInv).dot(U.T)
 
