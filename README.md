@@ -1,4 +1,4 @@
-# Stacked regressions and structured variance partitioning for interpretable brain maps 🧠
+# 🧠 Stacked regressions and structured variance partitioning for interpretable brain maps 
 
 ## Overview
 
