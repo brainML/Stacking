@@ -79,13 +79,6 @@ Project is: _complete_  -->
 ## Contributions
 Contributions are welcome! Please feel free to submit a pull request with your changes or open an issue to report a bug or suggest a new feature.
 
-## License
-
-MIT License
-
-Copyright (c) 2021 The Contributors
-
-
 
 ## Contact
 Created by [@lrg1213] - feel free to contact me!
