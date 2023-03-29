@@ -131,7 +131,7 @@ def stacking_fmri(
     train_features,
     test_features,
     method="cross_val_ridge",
-    score_f=np.mean_squared_error,
+    score_f=R2,
 ):
     """
     Stacks predictions from different feature spaces and uses them to make final predictions.
