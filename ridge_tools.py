@@ -173,48 +173,6 @@ def ridge_by_lambda_svd(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 100
     return error
 
 
-def kernel_ridge(X, Y, lmbda):
-    """
-    Kernel ridge regression.
-    """
-    return np.dot(X.T.dot(inv(X.dot(X.T) + lmbda * np.eye(X.shape[0]))), Y)
-
-
-def kernel_ridge_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
-    """
-    Calculate the validation error of kernel ridge regression for different lambdas.
-    """
-    error = np.zeros((lambdas.shape[0], Y.shape[1]))
-    for idx, lmbda in enumerate(lambdas):
-        weights = kernel_ridge(X, Y, lmbda)
-        error[idx] = 1 - R2(np.dot(Xval, weights), Yval)
-    return error
-
-
-def kernel_ridge_svd(X, Y, lmbda):
-    """
-    Kernel ridge regression using singular value decomposition (SVD).
-    """
-    U, s, Vt = svd(X.T, full_matrices=False)
-    d = s / (s**2 + lmbda)
-    return np.dot(np.dot(U, np.diag(d).dot(Vt)), Y)
-
-
-def kernel_ridge_by_lambda_svd(
-    X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])
-):
-    """
-    Calculate the validation error of kernel ridge regression using SVD for different lambdas.
-    """
-    error = np.zeros((lambdas.shape[0], Y.shape[1]))
-    U, s, Vt = svd(X.T, full_matrices=False)
-    for idx, lmbda in enumerate(lambdas):
-        d = s / (s**2 + lmbda)
-        weights = np.dot(np.dot(U, np.diag(d).dot(Vt)), Y)
-        error[idx] = 1 - R2(np.dot(Xval, weights), Yval)
-    return error
-
-
 def cross_val_ridge(
     train_features,
     train_data,
@@ -241,20 +199,12 @@ def cross_val_ridge(
     ridge_1 = {
         "plain": ridge_by_lambda,
         "svd": ridge_by_lambda_svd,
-        "kernel_ridge": kernel_ridge_by_lambda,
-        "kernel_ridge_svd": kernel_ridge_by_lambda_svd,
         "ridge_sk": ridge_by_lambda_sk,
     }[
         method
     ]  # loss of the regressor
 
-    ridge_2 = {
-        "plain": ridge,
-        "svd": ridge_svd,
-        "kernel_ridge": kernel_ridge,
-        "kernel_ridge_svd": kernel_ridge_svd,
-        "ridge_sk": ridge_sk,
-    }[
+    ridge_2 = {"plain": ridge, "svd": ridge_svd, "ridge_sk": ridge_sk,}[
         method
     ]  # solver for the weights
 
@@ -437,78 +387,3 @@ def cross_val_ols(
         plt.imshow(weights, aspect="auto", cmap="RdBu_r", vmin=-0.5, vmax=0.5)
 
     return weights, np.array([lambdas[i] for i in argmin_lambda])
-
-
-def GCV_ridge(
-    train_features, train_data, lambdas=np.array([10**i for i in range(-6, 10)])
-):
-    """
-    Generalized Cross-Validation (GCV) for ridge regression.
-
-    Args:
-        train_features (array): Array of training features.
-        train_data (array): Array of training data.
-        lambdas (array): Array of lambda values for Ridge regression.
-                          Default is [10^i for i in range(-6, 10)].
-
-    Returns:
-        weightMatrix (array): Array of weights for the Ridge regression.
-        r (array): Array of regularization parameters.
-    """
-
-    n_lambdas = lambdas.shape[0]
-    n_voxels = train_data.shape[1]
-    n_time = train_data.shape[0]
-    n_p = train_features.shape[1]
-
-    CVerr = np.zeros((n_lambdas, n_voxels))
-
-    # Perform SVD for faster computation of the inverse
-    print("Running svd")
-    start_time = time.time()
-    [U, D, Vt] = svd(train_features, full_matrices=False)
-    V = Vt.T
-    print(U.shape, D.shape, Vt.shape)
-    print("svd time: {}".format(time.time() - start_time))
-
-    for i, regularizationParam in enumerate(lambdas):
-        print("CVLoop: Testing regularization param: {}".format(regularizationParam))
-
-        # Compute Kinv for any lambda: Kinv = V * (D + lambda*I)^-1 U'
-        dlambda = D**2 + np.eye(n_p) * regularizationParam
-        dlambdaInv = np.diag(D / np.diag(dlambda))
-        KlambdaInv = V.dot(dlambdaInv).dot(U.T)
-
-        # Compute S matrix of Hastie Trick  H = X(XT X + lambdaI)-1XT
-        S = np.dot(U, np.diag(D * np.diag(dlambdaInv))).dot(U.T)
-        denum = 1 - np.trace(S) / n_time
-
-        # Solve for weight matrix to compute residual
-        weightMatrix = KlambdaInv.dot(train_data)
-
-        # Calculate CV error
-        YdiffMat = train_data - (train_features.dot(weightMatrix))
-        YdiffMat = YdiffMat / denum
-        CVerr[i, :] = (1 / n_time) * np.sum(YdiffMat * YdiffMat, 0)
-
-    # Find the minimum CV error index
-    minerrIndex = np.argmin(CVerr, axis=0)
-    r = np.zeros((n_voxels))
-
-    for nPar, regularizationParam in enumerate(lambdas):
-        ind = np.where(minerrIndex == nPar)[0]
-        if len(ind) > 0:
-            r[ind] = regularizationParam
-            print(
-                "{}% of outputs with regularization param: {}".format(
-                    int(len(ind) / n_voxels * 100), regularizationParam
-                )
-            )
-            # Compute weights with good regularization parameter
-            dlambda = D**2 + np.eye(n_p) * regularizationParam
-            dlambdaInv = np.diag(D / np.diag(dlambda))
-            KlambdaInv = V.dot(dlambdaInv).dot(U.T)
-
-            weightMatrix[:, ind] = KlambdaInv.dot(train_data[:, ind])
-
-    return weightMatrix, r
