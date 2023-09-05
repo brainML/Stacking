@@ -15,11 +15,11 @@ This is a Python package that provides an implementation of stacked regression f
 > We validate our approach in simulation, showcase its brain mapping potential on fMRI data, and release a Python package.
 
 ## Installation
-To use this code, you will need to have `numpy`, `cvxopt`, and `scipy` installed. You can install these packages using pip:
+To use this code, simply install with pip:
 
 
 ```bash
-pip install numpy cvxopt scipy scikit-learn
+pip install stacking_fmri
 ```
 
 
