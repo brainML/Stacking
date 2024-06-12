@@ -180,10 +180,10 @@ def cross_val_ridge(
     start_t = time.time()  # record start time
     for icv, (trn, val) in enumerate(kf.split(train_data)):
         cost = ridge_1(
-            train_features[trn],
-            train_data[trn],
-            train_features[val],
-            train_data[val],
+            zscore(train_features[trn]),
+            zscore(train_data[trn]),
+            zscore(train_features[val]),
+            zscore(train_data[val]),
             lambdas=lambdas,
         )  # loss of regressor 1
 
