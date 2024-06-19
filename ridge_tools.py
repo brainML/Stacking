@@ -207,9 +207,10 @@ def cross_val_ridge(
         lambdas.shape[0]
     ):  # this is much faster than iterating over voxels!
         idx_vox = argmin_lambda == idx_lambda
-        weights[:, idx_vox] = ridge_2(
-            train_features, train_data[:, idx_vox], lambdas[idx_lambda]
-        )
+        if len(idx_vox)>0:
+            weights[:, idx_vox] = ridge_2(
+                train_features, train_data[:, idx_vox], lambdas[idx_lambda]
+            )
 
     if do_plot:  # show the weights
         plt.figure()
