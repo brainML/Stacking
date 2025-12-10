@@ -10,48 +10,10 @@ from scipy.linalg import toeplitz
 import time
 
 
-
 def toeplitz_cov(n, scale=1):
     return toeplitz(np.exp(-(np.arange(n*1.0))**2/(n*scale)))
 
 def feat_sample(n,ds,scale):
-    nX = len(ds)
-    d = sum(ds)
-    Xtot = multivariate_normal.rvs(np.zeros(d),cov=toeplitz_cov(d,scale),size=n).T#reshape([n,d])
-    Xs = []
-    cnt=0
-    for di in ds:
-        Xs.append(Xtot[:,cnt:cnt+di])
-        cnt = cnt +di
-    return Xs
-
-def data_sample(Xs,ds,scale,alpha,data_dim,noise=0):
-    assert len(Xs) == len(alpha)
-    #ws = []
-    ts = []
-    y = 0
-    d = sum(ds)
-    cnt = 0
-    wtot = multivariate_normal.rvs(mean=np.zeros(d),cov=toeplitz_cov(d,scale),size=data_dim).T#reshape([d,data_dim])
-    for iX, X in enumerate(Xs):
-        w = wtot[cnt:cnt+ds[iX],:]
-        cnt += ds[iX]
-        t = zscore(X.dot(w))
-        ts.append(t)
-        y += alpha[iX]*t
-    ns = noise*np.random.randn(y.shape[0], y.shape[1])
-    y_orig = y
-    y+= ns
-    r_concat = R2(y_orig,y)
-    var_X0 = R2(y_orig - ts[0]*alpha[0],y)
-    return y, var_X0
-
-def sample_all_at_once(n,ds,scale, alpha,data_dim,y_noise=0):
-    Xs = feat_sample(n,ds,scale)
-    y,var_X0  = data_sample(Xs,ds,scale,alpha,data_dim,y_noise)
-    return Xs, y, var_X0  
-
-def feat_sample(n,ds,scale,correl=0):
     Xs = []
     for di in ds:
         X = multivariate_normal.rvs(np.zeros(di),cov=toeplitz_cov(di,scale),size=n)#reshape([n,di])
@@ -66,23 +28,32 @@ def data_sample(Xs,correl,ds,scale,alpha,data_dim,noise=0):
     cnt = 0
     wtot = multivariate_normal.rvs(mean=np.zeros(d),cov=toeplitz_cov(d,scale),
                                           size=data_dim).T#reshape([d,data_dim])
-    
     for iX, X in enumerate(Xs):
         w = wtot[cnt:cnt+ds[iX],:]
         cnt += ds[iX]
         t = zscore(X.dot(w))
         ts.append(t)
         y += alpha[iX]*t
+        # add correlated component
+        if correl>0:
+            if iX < len(Xs)-1: # add a correlated component from iX+1 to every iX
+                X_tmp = Xs[iX+1].dot(multivariate_normal.rvs(np.zeros(ds[iX]),cov=toeplitz_cov(ds[iX],scale),size=ds[iX+1]))
+                t_tmp = correl*zscore(X_tmp.dot(w))
+                Xs[iX] += correl*X_tmp
+                y += alpha[iX]*t_tmp
+            else: # increase contribution of last feature space to keep alphas meaningful
+                y += alpha[iX]*t*correl
+                Xs[iX] *= (1+ correl)
     y = zscore(y)
     ns = noise*np.random.randn(y.shape[0], y.shape[1])
     y_orig = y
     y+= ns
     var_X = [R2(alpha[i]*ts[i],y) for i in range(len(Xs))]
-    return y, var_X
+    return y, var_X, Xs
 
 def sample_all_at_once(n,ds,scale,correl, alpha,data_dim,y_noise=0):
-    Xs = feat_sample(n,ds,scale,correl)
-    y,var_X  = data_sample(Xs,correl,ds,scale,alpha,data_dim,y_noise)
+    Xs = feat_sample(n,ds,scale)
+    y,var_X, Xs  = data_sample(Xs,correl,ds,scale,alpha,data_dim,y_noise)
     return Xs, y, var_X  
 
 # Experiment Functions
