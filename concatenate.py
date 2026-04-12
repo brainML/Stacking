@@ -1,8 +1,7 @@
 # from cvxopt import matrix, solvers
 import numpy as np
-from scipy.stats import zscore
 from ridge_tools import cross_val_ridge, R2, ridge
-from stacking import feat_ridge_CV, get_cv_indices
+from stacking import feat_ridge_CV, get_cv_indices, _normalize
 
 
 def concatenate_CV_fmri(data, features, method="cross_val_ridge", n_folds=5, score_f=R2):
@@ -42,11 +41,11 @@ def concatenate_CV_fmri(data, features, method="cross_val_ridge", n_folds=5, sco
         test_features = [F[test_ind] for F in features]
 
         # normalize data
-        train_data = np.nan_to_num(zscore(train_data))
-        test_data = np.nan_to_num(zscore(test_data))
+        train_data = _normalize(train_data)
+        test_data = _normalize(test_data)
 
-        train_features = [np.nan_to_num(zscore(F)) for F in train_features]
-        test_features = [np.nan_to_num(zscore(F)) for F in test_features]
+        train_features = [_normalize(F) for F in train_features]
+        test_features = [_normalize(F) for F in test_features]
 
         # Store predictions
         __,__, concat_pred[test_ind], __,__ = feat_ridge_CV(np.hstack(train_features), train_data, np.hstack(test_features), 
@@ -54,7 +53,7 @@ def concatenate_CV_fmri(data, features, method="cross_val_ridge", n_folds=5, sco
 
         
     # Compute overall performance metrics
-    data_zscored = zscore(data)
+    data_zscored = _normalize(data)
 
     concat_r2s = score_f(concat_pred, data_zscored)
 

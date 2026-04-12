@@ -3,7 +3,7 @@ from __future__ import division
 import time
 import numpy as np
 from scipy.stats import zscore
-from numpy.linalg import inv, svd
+from numpy.linalg import solve, svd
 from sklearn.model_selection import KFold
 from sklearn.linear_model import Ridge, RidgeCV
 
@@ -18,6 +18,11 @@ def R2(Pred, Real):
     SSres = np.mean((Real - Pred) ** 2, 0)
     SStot = np.var(Real, 0)
     return np.nan_to_num(1 - SSres / SStot)
+
+
+def _normalize(arr):
+    """Z-score and replace NaNs produced by constant columns in-place when possible."""
+    return np.nan_to_num(zscore(arr, axis=0), copy=False)
 
 
 def fit_predict(data, features, method="plain", n_folds=10):
@@ -81,7 +86,9 @@ def R2r(Pred, Real):
 
 def ridge(X, Y, lmbda):
     """Compute ridge regression weights."""
-    return np.dot(inv(X.T.dot(X) + lmbda * np.eye(X.shape[1])), X.T.dot(Y))
+    gram = X.T @ X
+    rhs = X.T @ Y
+    return solve(gram + lmbda * np.eye(X.shape[1], dtype=X.dtype), rhs)
 
 
 def ridge_by_lambda(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):
@@ -130,10 +137,11 @@ def ridge_by_lambda_svd(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 100
     """
     error = np.zeros((lambdas.shape[0], Y.shape[1]))
     U, s, Vt = svd(X, full_matrices=False)
+    UtY = U.T @ Y
     for idx, lmbda in enumerate(lambdas):
         d = s / (s**2 + lmbda)
-        weights = np.dot(Vt, np.diag(d).dot(U.T.dot(Y)))
-        error[idx] = 1 - R2(np.dot(Xval, weights), Yval)
+        weights = Vt.T @ (d[:, None] * UtY)
+        error[idx] = 1 - R2(Xval @ weights, Yval)
     return error
 
 
@@ -177,13 +185,12 @@ def cross_val_ridge(
     r_cv = np.zeros((nL, train_data.shape[1]))  # loss matrix
 
     kf = KFold(n_splits=n_splits)  # set up dataset for cross validation
-    start_t = time.time()  # record start time
     for icv, (trn, val) in enumerate(kf.split(train_data)):
         cost = ridge_1(
-            zscore(train_features[trn]),
-            zscore(train_data[trn]),
-            zscore(train_features[val]),
-            zscore(train_data[val]),
+            _normalize(train_features[trn]),
+            _normalize(train_data[trn]),
+            _normalize(train_features[val]),
+            _normalize(train_data[val]),
             lambdas=lambdas,
         )  # loss of regressor 1
 
@@ -207,7 +214,7 @@ def cross_val_ridge(
         lambdas.shape[0]
     ):  # this is much faster than iterating over voxels!
         idx_vox = argmin_lambda == idx_lambda
-        if np.sum(idx_vox*1.0)>0:
+        if np.any(idx_vox):
             weights[:, idx_vox] = ridge_2(
                 train_features, train_data[:, idx_vox], lambdas[idx_lambda]
             )
