@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "response_data_used": false,
+  "input": {
+    "logical_id": "nsd_legacy/subject_02/alexnet_pooled/conv3",
+    "shape": [10000, 9600],
+    "dtype": "float32",
+    "sha256": "61449e0ddf74e1e18677dc5f00706ccb9b05318c426d3a497fb21c6345872d46"
+  },
+  "execution": {
+    "python": "3.8.5",
+    "numpy": "1.23.0",
+    "sklearn": "0.23.2",
+    "requested_svd_solver": "auto",
+    "resolved_svd_solver": "randomized",
+    "n_components": 512,
+    "seeds": [0, 1337, 2026],
+    "probe_row_count": 256,
+    "config_sha256": "a4c99e125ded4154cc4b4d7640b84a72725cb9ffe98d43dec14953b9bf3cfcb9",
+    "source_sha256": "fa18427fc66ab4e402c9176653ab5789330a2d37dfdfe039fa3701a8540af826",
+    "full_result_sha256": "2876dfc2ff761b463966f7d66297e8bd5169d5b5fa9dbb12bcc035a32c30ed07"
+  },
+  "runs": [
+    {
+      "seed": 0,
+      "explained_variance_ratio_sum": 0.7265834746067412,
+      "components_sha256_float64": "cda64bfd6c60f14dc32888bc0a1c1e9204c0c4db9174801c04055b117e402a56",
+      "probe_transform_sha256_float64": "69039a5aa476c18814262598921a8a8b2ea64891262a5523a4e68bcb0b0b73f8"
+    },
+    {
+      "seed": 1337,
+      "explained_variance_ratio_sum": 0.726581665338017,
+      "components_sha256_float64": "685a74e53360bd9e85e5f1a5f1bdf63d8543875b3b088b1d7d699a7b00d4c000",
+      "probe_transform_sha256_float64": "328adc09646a8750bb3f3ff0a7a46623fc3ef9dbf9b35e73fa4494656b407566"
+    },
+    {
+      "seed": 2026,
+      "explained_variance_ratio_sum": 0.7265713909582701,
+      "components_sha256_float64": "76ba3005b12133fce0d42f101267009f8dbbe90f9a4ab628b2dc32cea8019bd2",
+      "probe_transform_sha256_float64": "54d0f20470ba681c2c234e7b9dd3a8d72ff00e5140e07c6c3b8b8600640c8c81"
+    }
+  ],
+  "pairwise": [
+    {
+      "seeds": [0, 1337],
+      "principal_cosine_min": 0.013773778113734246,
+      "principal_cosine_mean": 0.9663216538071497,
+      "principal_cosine_max": 1.0,
+      "subspace_chordal_distance": 5.054268839885688,
+      "probe_gram_relative_frobenius_difference": 0.024377876704015682
+    },
+    {
+      "seeds": [0, 2026],
+      "principal_cosine_min": 0.04349400452459741,
+      "principal_cosine_mean": 0.9659303545492344,
+      "principal_cosine_max": 1.0,
+      "subspace_chordal_distance": 5.06279968231209,
+      "probe_gram_relative_frobenius_difference": 0.02408402945566398
+    },
+    {
+      "seeds": [1337, 2026],
+      "principal_cosine_min": 0.001173637427528527,
+      "principal_cosine_mean": 0.9666180829906593,
+      "principal_cosine_max": 1.0,
+      "subspace_chordal_distance": 5.045630551609169,
+      "probe_gram_relative_frobenius_difference": 0.024367974541258813
+    }
+  ],
+  "decision": {
+    "exact_legacy_reproduction_seed_invariant": false,
+    "reason": "Randomized PCA retained subspaces and probe geometry differ materially across the frozen seeds.",
+    "next_gate": "Measure downstream variation for all seven experts on one frozen outer fold and 256 prospectively fixed voxels."
+  }
+}

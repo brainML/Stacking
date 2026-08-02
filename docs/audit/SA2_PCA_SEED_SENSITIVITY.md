@@ -2,7 +2,7 @@
 
 Date: 2026-08-02
 
-Status: **frozen plan; not submitted**.
+Status: **completed; historical PCA is not seed-invariant**.
 
 No recoverable seed, PCA object, RNG state, or seeded job wrapper was found for
 the participant-2 structured-variance scripts. The recovered wrappers invoke
@@ -38,17 +38,41 @@ rotation:
 Raw component and probe-transform hashes are recorded only for deterministic
 rerun identity.
 
+## Result
+
+All three runs resolved to scikit-learn's randomized PCA solver. Total
+explained-variance ratios were nearly identical (range `1.21e-5`), but that
+aggregate hides differences in the retained subspaces:
+
+- mean principal-angle cosines ranged from 0.9659 to 0.9666;
+- the least-aligned direction in each pair had cosine 0.0012 to 0.0435;
+- chordal distances ranged from 5.0456 to 5.0628; and
+- relative probe-row Gram differences ranged from 2.408% to 2.438%.
+
+Therefore a fresh randomized PCA draw cannot be treated as an exact,
+seed-invariant reconstruction of the historical preprocessing. This result
+does not by itself establish that held-out encoding scores or mixture weights
+change materially; that is the next bounded gate.
+
+The sanitized metrics and provenance hashes are recorded in
+[`SA2_PCA_SEED_SENSITIVITY_RESULT.json`](SA2_PCA_SEED_SENSITIVITY_RESULT.json).
+An initial artifact whose unbounded SVD roundoff produced cosine maxima a few
+parts per million above one was superseded. The validated result clips only
+the computed cosine spectrum to its mathematical `[0, 1]` range; PCA outputs,
+probe-Gram comparisons, and component hashes are unchanged.
+
 ## Escalation rule
 
-If the three full-matrix PCA runs are effectively invariant at prespecified
-numerical tolerances, freeze one seed for a labeled deterministic legacy
-reconstruction. If they are materially different, run all seven experts for
-the same three seeds but restrict downstream evaluation to one outer fold and
-256 prospectively fixed voxels. Do not search a large seed space for the seed
-that best matches the published outcomes.
+The first branch failed: the retained feature geometry is not effectively
+invariant. The next run will fit all seven experts for the same three seeds but
+restrict downstream evaluation to one outer fold and 256 prospectively fixed
+voxels. Do not search a large seed space for the seed that best matches the
+published outcomes.
 
 The diagnostic is configured in
 `configs/audit/pca_seed_sensitivity_subject02_conv3.json`. It requests one
-Slurm CPU job, 16 CPUs, 64 GiB RAM, four hours, and no concurrency. Submission
-is deferred because the account already has substantial unrelated queued work;
-the audit will not contend with it without an explicit scheduling decision.
+Slurm CPU job, 16 CPUs, 64 GiB RAM, four hours, and no concurrency. The bounded
+feature-only job completed on 2026-08-02 in the recovered environment.
+Scheduler identifiers, cluster paths, and logs remain in the ignored private
+run manifest; the public record contains only validated, response-free
+diagnostic results.

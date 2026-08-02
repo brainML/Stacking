@@ -24,6 +24,8 @@ def test_seed_sensitivity_reports_pairwise_invariants(tmp_path: Path):
     assert len(result["pairwise"]) == 3
     assert all(item["resolved_svd_solver"] == "randomized" for item in result["runs"])
     for comparison in result["pairwise"]:
-        assert 0 <= comparison["principal_cosine_min"] <= 1.0000001
+        assert 0 <= comparison["principal_cosine_min"] <= 1
+        assert 0 <= comparison["principal_cosine_mean"] <= 1
+        assert 0 <= comparison["principal_cosine_max"] <= 1
         assert comparison["subspace_chordal_distance"] >= 0
         assert comparison["probe_gram_relative_frobenius_difference"] >= 0

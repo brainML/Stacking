@@ -6,8 +6,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import platform
 import resource
+import tempfile
 import time
 from pathlib import Path
 from typing import Any, Iterable
@@ -85,6 +87,9 @@ def run_seed_sensitivity(
         for right_seed in seed_values[left_index + 1 :]:
             cross_basis = components[left_seed] @ components[right_seed].T
             singular_values = np.linalg.svd(cross_basis, compute_uv=False)
+            # Roundoff in the SVD can place singular values a few ulps outside
+            # the mathematical cosine range and bias the chordal distance.
+            singular_values = np.clip(singular_values, 0.0, 1.0)
             chordal_squared = max(
                 0.0, n_components - float(np.square(singular_values).sum())
             )
@@ -150,7 +155,22 @@ def main() -> None:
     if args.output.exists():
         raise FileExistsError(f"refusing to overwrite output: {args.output}")
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(rendered + "\n")
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        dir=args.output.parent,
+        prefix=f".{args.output.name}.",
+        suffix=".tmp",
+        delete=False,
+    ) as stream:
+        temporary_path = Path(stream.name)
+        stream.write(rendered + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    try:
+        os.replace(temporary_path, args.output)
+    except Exception:
+        temporary_path.unlink(missing_ok=True)
+        raise
 
 
 if __name__ == "__main__":
