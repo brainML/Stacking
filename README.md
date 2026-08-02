@@ -7,8 +7,11 @@ estimator. The current NSD lineage finding is recorded in the
 [`SA1 code/result provenance report`](docs/audit/SA1_CODE_AND_RESULT_PROVENANCE.md).
 The conditional corrected-v2 GPU analysis without PCA is specified separately
 in the [`full-feature GPU arm`](docs/audit/GPU_FULL_FEATURE_ARM.md).
-The first bounded historical NSD replay is frozen, but not yet launched, in the
-[`participant-2 replay specification`](docs/audit/SA2_SUBJECT02_REPLAY_SPEC.md).
+The bounded participant-2 seed audit is recorded in the
+[`downstream result`](docs/audit/SA2_SEED_DOWNSTREAM_RESULT.json). The first
+deterministic corrected-v2 CPU oracle is specified in the
+[`corrected-v2 contract`](docs/audit/CORRECTED_V2_SPEC.md), with its frozen
+[`fixture result`](docs/audit/CORRECTED_V2_FIXTURE_RESULT.json).
 
 ## Overview
 

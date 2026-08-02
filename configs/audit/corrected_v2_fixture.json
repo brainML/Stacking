@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "run_id": "corrected_v2_cpu_float64_fixture_v1",
+  "state": "frozen",
+  "estimator_contract": "corrected_v2",
+  "seed": 20260802,
+  "rows": 36,
+  "groups": 18,
+  "targets": 3,
+  "outer_fit_rows": 24,
+  "outer_test_rows": 12,
+  "inner_folds": 6,
+  "feature_dimensions": [5, 50],
+  "lambdas": [0.01, 0.1, 1.0, 10.0, 100.0],
+  "arms": [
+    {"feature_transform_policy": "standardize", "pca_components": null},
+    {"feature_transform_policy": "nested_pca", "pca_components": 4}
+  ],
+  "gates": {
+    "primal_dual_prediction_max_abs": 1e-10,
+    "simplex_sum_error_max": 1e-10,
+    "simplex_minimum_weight_min": -1e-10,
+    "simplex_stationarity_max": 1e-8,
+    "bitwise_repeat_required": true,
+    "constant_target_score": 0.0
+  }
+}

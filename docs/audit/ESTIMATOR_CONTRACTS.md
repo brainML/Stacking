@@ -61,6 +61,11 @@ reviewed primal/dual ridge implementation. It is a separate scientific arm and
 cannot be substituted for a historical PCA run. See
 [`GPU_FULL_FEATURE_ARM.md`](GPU_FULL_FEATURE_ARM.md).
 
+The implementation-independent mathematical and artifact specification is
+frozen in [`CORRECTED_V2_SPEC.md`](CORRECTED_V2_SPEC.md). The first deterministic
+CPU float64 fixture and its intermediate hashes are recorded in
+[`CORRECTED_V2_FIXTURE_RESULT.json`](CORRECTED_V2_FIXTURE_RESULT.json).
+
 Mixture coefficients are predictive weights. With identical or duplicated
 experts, individual coefficients are nonidentifiable; equivalence is assessed
 using ensemble prediction, objective value, and aggregate weight over the

@@ -1,0 +1,87 @@
+{
+  "acquired_average": {
+    "repeat_counts": [2, 2, 0, 2, 0],
+    "responses_sha256": "8eef941c4bc5abf38fc477a702821eb66b069b97f56fe525e8dda92feed6b9ed",
+    "retained_image_mask": [true, true, false, true, false]
+  },
+  "arms": [
+    {
+      "bitwise_repeat_equal": true,
+      "constant_target_score": 0.0,
+      "ensemble_test_scores": [0.999999738279674, 0.9831977417490781, 0.0],
+      "feature_transform_policy": "standardize",
+      "hashes": {
+        "ensemble_oof_prediction_sha256": "b109da78e07621886e38bb493db0547187c7e9520ea32d82d5130ddb6287e015",
+        "ensemble_test_prediction_sha256": "66e2c27d455022b2c90972515bc59f3edac98c17bbf73d3ed9e186591f43d6ff",
+        "ensemble_test_score_sha256": "2fddec239213f453869cc8dfc334c5363a0eb5d4fc9008d2cfbf9438c4a2b4f9",
+        "expert_oof_prediction_sha256": "062ae732a322f2cb1037f56ffc7945abaf53e3ce98e6fe8a66df4f0587f24cdb",
+        "expert_test_prediction_sha256": "77c38e5b5e14f4e099a2461d8283b2d661f0179bfed3ebaf96d3e178a156f7c5",
+        "expert_test_scores_sha256": "b9c1bdb766bf64c188d5bcee8b4a0a4e73fb6b70c78935e0800f146122379424",
+        "mixture_weights_sha256": "19709e2dbc59048b34afd3b7d7e25818101b3569a26ab785f9481d8a84009b77",
+        "selected_lambdas_sha256": "5e38c5248423caa2058fc0c1866f25046c2b3b99111f3cf2dc918491eea0cb2b"
+      },
+      "identities": {
+        "row": "b0eb5205c7f2b4133679fba0049b2c246894a10ff4784e1d2dc3109e68ba7f6f",
+        "split": "a9030b5ddd632c4dd848ef07e017d05acbe72f48fc16a8803393f3c3f133c131",
+        "target": "a1ed27d71712c071f60007869f3059c91e97283e44a3b0529bfc32d4e0e69045"
+      },
+      "mixture_diagnostics": {
+        "active_stationarity_max": 5.234782198644192e-16,
+        "complementarity_max": 4.972478752117499e-16,
+        "inactive_dual_violation_max": 0.0,
+        "minimum_weight_min": 0.0,
+        "success_all": true,
+        "sum_error_max": 0.0
+      },
+      "pca_components": null,
+      "resolved_ridge_solvers": ["primal", "dual"]
+    },
+    {
+      "bitwise_repeat_equal": true,
+      "constant_target_score": 0.0,
+      "ensemble_test_scores": [0.9999996683691063, 0.3677198600641648, 0.0],
+      "feature_transform_policy": "nested_pca",
+      "hashes": {
+        "ensemble_oof_prediction_sha256": "5038f7719e62f80ac17dd3c2da460b1cd14be19452c3346501f9b01e4ab7f82c",
+        "ensemble_test_prediction_sha256": "495837dc9e58acf0c9936c6921f8ffe451de41d45cae2c6fe8c66929c8167b02",
+        "ensemble_test_score_sha256": "9eee1c58409eecd9f1eddb55799650647c0b9cbc0c30e4406b82230cc843e2d9",
+        "expert_oof_prediction_sha256": "64b1d3d58e432608885b3289431aa27a7d1d4fa6762c469f275ff1aff28556bc",
+        "expert_test_prediction_sha256": "8acdbe6fcfe8bf926b918ba9329c6fbea1d59fc1c8dff367330ae3f2b16dedb7",
+        "expert_test_scores_sha256": "65dd0829865f6cf4cffd8facdc6360fdf5a43d2024605beb2267c9e59706b332",
+        "mixture_weights_sha256": "8a654f36d428ab4b154f4cb4a9fa0ffce23bddddfdb9e97e6f689360d2561c31",
+        "selected_lambdas_sha256": "5e38c5248423caa2058fc0c1866f25046c2b3b99111f3cf2dc918491eea0cb2b"
+      },
+      "identities": {
+        "row": "b0eb5205c7f2b4133679fba0049b2c246894a10ff4784e1d2dc3109e68ba7f6f",
+        "split": "a9030b5ddd632c4dd848ef07e017d05acbe72f48fc16a8803393f3c3f133c131",
+        "target": "a1ed27d71712c071f60007869f3059c91e97283e44a3b0529bfc32d4e0e69045"
+      },
+      "mixture_diagnostics": {
+        "active_stationarity_max": 0.0,
+        "complementarity_max": 0.0,
+        "inactive_dual_violation_max": 0.0,
+        "minimum_weight_min": 0.0,
+        "success_all": true,
+        "sum_error_max": 0.0
+      },
+      "pca_components": 4,
+      "resolved_ridge_solvers": ["primal", "primal"]
+    }
+  ],
+  "environment": {
+    "numpy": "1.22.3",
+    "python": "3.9.7",
+    "scipy": "1.7.1"
+  },
+  "estimator_contract": "corrected_v2",
+  "numerical_mode": "cpu_float64",
+  "primal_dual_prediction_max_abs": 1.7763568394002505e-15,
+  "provenance": {
+    "config_sha256": "ee732358c87ef9b6ae87d15c3216e801db264af38df1cd12973e67f06142f043",
+    "oracle_source_sha256": "e296902276f913ff3f4b5575325acd0eae690bcce8e4f52b4b40ffbdc484116c",
+    "runner_source_sha256": "06c6c37370d9e3d1eab2678bb71aa890252cb663aa8d9bba163e39ebf6c9ce31"
+  },
+  "run_id": "corrected_v2_cpu_float64_fixture_v1",
+  "schema_version": 1,
+  "status": "passed"
+}
