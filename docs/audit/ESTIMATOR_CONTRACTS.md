@@ -18,6 +18,8 @@ including:
 - contiguous deterministic fold construction;
 - independently standardized fit, validation, and test partitions where that
   occurred historically;
+- fixed three-repeat response averaging with unacquired repeats represented as
+  zeros where that occurred historically;
 - the historical lambda grid, solver, and score semantics; and
 - the historical output tuple and map calculations.
 
@@ -34,21 +36,30 @@ This contract requires:
 1. Finite two-dimensional feature and target arrays with explicit row and
    column identities.
 2. Immutable, externally supplied inner and outer splits.
-3. No overlap between fit and validation rows.
-4. No overlap between fit and validation groups when groups encode repeated
+3. An explicit acquisition-availability mask; response averages use acquired
+   repeats only, and images with no acquired response are excluded.
+4. No overlap between fit and validation rows.
+5. No overlap between fit and validation groups when groups encode repeated
    images, sessions, participants, or another protected unit.
-5. Every preprocessing transform fitted on the fit rows and applied unchanged
+6. Every preprocessing transform fitted on the fit rows and applied unchanged
    to validation and test rows.
-6. Predictions and out-of-fold errors returned in raw target units.
-7. Per-target ridge regularization selected only inside the applicable
+7. Predictions and out-of-fold errors returned in raw target units.
+8. Per-target ridge regularization selected only inside the applicable
    training partition.
-8. Signed held-out coefficient of determination with an explicitly tested
+9. Signed held-out coefficient of determination with an explicitly tested
    constant-target convention.
-9. Nonnegative stacking coefficients that sum to one, accompanied by
+10. Nonnegative stacking coefficients that sum to one, accompanied by
    feasibility, objective, and convergence diagnostics.
-10. Saved intermediate identities for transforms, selected regularization,
+11. Saved intermediate identities for transforms, selected regularization,
     out-of-fold predictions, errors, mixture optimization, test predictions,
     and scores.
+
+Every corrected run declares one feature-transform policy. The initial CPU
+oracle uses train-partition-fitted transforms. After GPU float64 parity passes,
+`none_full_feature` may retain the original feature coordinates and use a
+reviewed primal/dual ridge implementation. It is a separate scientific arm and
+cannot be substituted for a historical PCA run. See
+[`GPU_FULL_FEATURE_ARM.md`](GPU_FULL_FEATURE_ARM.md).
 
 Mixture coefficients are predictive weights. With identical or duplicated
 experts, individual coefficients are nonidentifiable; equivalence is assessed

@@ -2,7 +2,7 @@
 
 Date: 2026-08-02
 
-Status: **partial pass; lineage adjudication remains open**.
+Status: **partial pass; a mixed code/result lineage conflict is confirmed**.
 
 No remote file was created, modified, or transferred. The inventory read
 directory metadata and NumPy headers. One small stimulus metadata file was
@@ -36,22 +36,30 @@ for participants 01 and 05 only.
 ### Legacy feature panel
 
 Feature directories exist for all eight participants plus a separate
-participant-1 revision directory. The participant-1 AlexNet arrays are
-float32 with 10,000 rows:
+participant-1 revision directory. The pooled AlexNet arrays for participants
+1, 2, 5, and 7 are float32 with 10,000 rows:
 
 | Representation | Columns |
 | --- | ---: |
-| conv1 | 18,496 |
-| conv2 | 19,200 |
-| conv3 | 18,816 |
-| conv4 | 16,384 |
-| conv5 | 16,384 |
+| conv1 | 9,216 |
+| conv2 | 9,408 |
+| conv3 | 9,600 |
+| conv4 | 9,216 |
+| conv5 | 9,216 |
 | fc6 | 4,096 |
 | fc7 | 4,096 |
 
+Participants 3, 4, 6, and 8 instead contain full spatial convolutional maps:
+`(64, 55, 55)`, `(192, 27, 27)`, `(384, 13, 13)`, `(256, 13, 13)`, and
+`(256, 13, 13)`, followed by 4,096-dimensional `fc6` and `fc7`. Thus the
+recovered cohort differs in pre-PCA feature construction as well as PCA
+dimension.
+
 The directory also includes ResNet, Taskonomy, caption-trained, place-trained,
-and other legacy representations. Checkpoint, extraction, stimulus-order, and
-PCA provenance are not yet established by filenames or headers.
+and other legacy representations. Checkpoint identity remains unresolved. The
+pooled participant-1 and participant-2 feature rows match deterministic
+samples from the located 73,000-image source matrices exactly; other
+participants remain to be checked or require a different raw-map source.
 
 ### Stimulus metadata
 
@@ -61,8 +69,10 @@ The candidate merged stimulus metadata file is 11,310,098 bytes with SHA-256:
 e46fca15901196541b8921aa8c03ee9d662e7da085d852e13ebb01f89c7623c6
 ```
 
-Its row semantics and relationship to the 10,000-row participant arrays still
-require validation against official NSD identities.
+Its participant membership and repeat-position semantics now reproduce the
+row order and sampled numerical values of all eight averaged response arrays.
+The relationship to an independently obtained official NSD metadata release
+still requires validation.
 
 For participant 1, the three repeat-position columns identify 10,000 unique
 images and form an exact one-based partition of trial positions 1 through
@@ -72,6 +82,14 @@ produces SHA-256:
 ```text
 d86a79a8f06ebb57616eda68c8393c966996c8aed80f87d18d0ff13b3d217671
 ```
+
+For participants 1, 2, 5, and 7, sampled averaged responses exactly equal the
+mean of the three trial responses. Participants 3 and 6 contain only 24,000
+trials, and participants 4 and 8 contain 22,500. Their averaged arrays use the
+sum of acquired responses divided by a fixed three: respectively 589 and 791
+images have no acquired repeat and sampled values for those rows are exactly
+zero. This convention is part of the legacy lineage, not the corrected data
+contract.
 
 ## CORTEX findings
 
@@ -132,14 +150,21 @@ commits, working-tree diffs, notebooks, and untracked analysis artifacts must
 be inventoried independently before deciding which code generated each
 published result.
 
-The local historical archive adds another unresolved implementation question.
-The paper reports 1,024 PCA dimensions per AlexNet layer, while readily located
-eight-participant scripts use 512 dimensions. A few older subject-1 scripts use
-1,024 dimensions, but target different source paths or model variants. All of
-these scripts fit PCA to all 10,000 images before outer cross-validation. The
-exact scripts and PCA realization used for the published cohort therefore
-remain unidentified; the located code cannot yet be treated as the published
-pipeline.
+The local historical archive resolves part of the implementation question and
+confirms a cohort-level conflict. The paper reports 1,024 PCA dimensions per
+AlexNet layer. The recovered participant-1 structured-variance scripts use
+1,024, but the recovered participant-2/5/7 structured-variance scripts and
+participant-3/4/6/8 ordinary stacking scripts use 512. All fit PCA to all
+10,000 images before encoding-model cross-validation.
+
+Result chunk lengths close exactly against the identified response arrays for
+participants 1, 2, 3, 4, 6, and 8. Participants 5 and 7 instead close against
+the older cortical tree and its recovered masks, differing from the newer tree
+by 83 and 30 voxels respectively. See
+[`SA1_CODE_AND_RESULT_PROVENANCE.md`](SA1_CODE_AND_RESULT_PROVENANCE.md) for
+the script, mask, dirty-worktree, and representative result hashes. The
+published cohort cannot presently be described as one 1,024-component,
+single-response-generation pipeline.
 
 ## Storage observation
 
@@ -151,10 +176,12 @@ until that policy is confirmed.
 
 ## Remaining SA1 work
 
-1. Identify the exact published NSD scripts, masks, PCA objects, and stimulus
-   selection/order artifacts.
-2. Extend the now-verified participant-1 trial sequence mapping to the row
-   order of the MIND averaged responses/features and to participants 2-8.
+1. Link every published panel to an exact result-family hash and executable
+   script; preserve the now-confirmed participant-specific PCA/response
+   lineages rather than collapsing them.
+2. Close feature-row identity by comparing subject feature rows with the
+   identified source matrix; response-row identity is now numerically verified
+   for participants 1-8.
 3. Map cortical columns to official voxel spaces and ROI masks.
 4. Establish checkpoint, PCA dimension, PCA fit partition, and preprocessing
    provenance for the seven AlexNet feature spaces.

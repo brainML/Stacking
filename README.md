@@ -3,7 +3,10 @@
 The active correction and reference-implementation audit is documented under
 [`docs/audit`](docs/audit/SA0_DECISION_REPORT.md). Audit work keeps historical
 reproduction separate from the candidate train-fitted `corrected_v2`
-estimator.
+estimator. The current NSD lineage finding is recorded in the
+[`SA1 code/result provenance report`](docs/audit/SA1_CODE_AND_RESULT_PROVENANCE.md).
+The conditional corrected-v2 GPU analysis without PCA is specified separately
+in the [`full-feature GPU arm`](docs/audit/GPU_FULL_FEATURE_ARM.md).
 
 ## Overview
 
@@ -93,5 +96,3 @@ Created by [@lrg1213] - feel free to contact me!
 <a id="1">[1]</a> 
 Ruogu Lin, Thomas Naselaris, Kendrick Kay, and Leila Wehbe (2023). 
 Stacked regressions and structured variance partitioning for interpretable brain maps.
-
-
