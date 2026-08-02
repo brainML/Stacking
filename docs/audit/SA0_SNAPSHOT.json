@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "captured_utc": "2026-08-02T08:23:59Z",
+  "repositories": {
+    "Stacking": {
+      "commit": "2232c0db521fd37aecb24eea63c126ff3f4d0adf",
+      "branch_before_audit": "main",
+      "remote": "brainML/Stacking",
+      "preexisting_worktree_entries": [
+        "untracked:__pycache__/"
+      ]
+    },
+    "Stacking_GPU": {
+      "commit": "d9eeeca4f685b374e04ce2a324cc7d6323a9133c",
+      "branch": "main",
+      "remote": "lrgthu/Stacking_GPU",
+      "preexisting_worktree_entries": []
+    },
+    "lambda_gpu_scheduler": {
+      "commit": "b4234c62ea2bd12841a48bd22cb3a3334bafc78f",
+      "branch": "main",
+      "remote": "lrgthu/lambda-gpu-scheduler",
+      "preexisting_worktree_entries": []
+    },
+    "Neuroscience_Research_Roadmap": {
+      "commit": "cc56922997e5f21e05f7688d4d864ae5061c974a",
+      "branch": "main",
+      "remote": "lrgthu/Neuroscience-Research-Roadmap",
+      "preexisting_worktree_entries": []
+    }
+  },
+  "baseline_test": {
+    "command": "/Users/lrg1213/anaconda3/bin/python -m pytest -q",
+    "result": "5 passed",
+    "duration_seconds": 1.85,
+    "system_python_note": "The system Python lacked NumPy and pytest; it was not used as the audit environment."
+  },
+  "authorization": {
+    "remote_inventory": "read_only",
+    "scientific_replay": false,
+    "nsd_transfer_to_lambda": false,
+    "lambda_instance_creation": false
+  }
+}

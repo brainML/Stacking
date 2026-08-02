@@ -1,5 +1,10 @@
 # 🧠 Stacked regressions and structured variance partitioning for interpretable brain maps 
 
+The active correction and reference-implementation audit is documented under
+[`docs/audit`](docs/audit/SA0_DECISION_REPORT.md). Audit work keeps historical
+reproduction separate from the candidate train-fitted `corrected_v2`
+estimator.
+
 ## Overview
 
 This is a Python package that provides an implementation of stacked regression for functional MRI (fMRI) data. The package uses ridge regression to train models on multiple feature spaces and combines the predictions from these models using a weighted linear combination. The weights are learned using quadratic programming.
@@ -88,6 +93,5 @@ Created by [@lrg1213] - feel free to contact me!
 <a id="1">[1]</a> 
 Ruogu Lin, Thomas Naselaris, Kendrick Kay, and Leila Wehbe (2023). 
 Stacked regressions and structured variance partitioning for interpretable brain maps.
-
 
 

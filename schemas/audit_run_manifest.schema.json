@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brainML/Stacking/schemas/audit_run_manifest.schema.json",
+  "title": "Stacking audit run manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "estimator_contract",
+    "numerical_mode",
+    "source",
+    "environment",
+    "inputs",
+    "splits",
+    "configuration",
+    "outputs",
+    "validation",
+    "termination"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "estimator_contract": {
+      "enum": ["legacy_reproduction", "corrected_v2"]
+    },
+    "numerical_mode": {
+      "enum": ["cpu_float64", "torch_cpu_float64", "gpu_float64", "gpu_float32"]
+    },
+    "source": {"$ref": "#/$defs/source"},
+    "environment": {"type": "object"},
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "splits": {
+      "type": "object",
+      "required": ["outer_split_id", "inner_split_ids"],
+      "properties": {
+        "outer_split_id": {"type": "string", "minLength": 1},
+        "inner_split_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "group_identity": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "configuration": {"type": "object"},
+    "outputs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "validation": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["not_run", "passed", "failed"]},
+        "checks": {"type": "array", "items": {"type": "object"}}
+      },
+      "additionalProperties": false
+    },
+    "termination": {
+      "type": "object",
+      "required": ["state"],
+      "properties": {
+        "state": {"enum": ["planned", "running", "completed", "failed", "cancelled"]},
+        "exit_code": {"type": ["integer", "null"]},
+        "cleanup_confirmed": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["repository", "commit", "dirty"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "dirty": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["logical_id", "sha256"],
+      "properties": {
+        "logical_id": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "shape": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "dtype": {"type": ["string", "null"]},
+        "bytes": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  }
+}
