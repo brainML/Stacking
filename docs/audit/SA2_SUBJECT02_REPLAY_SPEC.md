@@ -2,7 +2,7 @@
 
 Date: 2026-08-02
 
-Status: **preflight complete; compute not launched**.
+Status: **full-hash preflight passed; RNG gate blocks compute**.
 
 This is the first bounded NSD replay candidate. It targets participant 2,
 forward structured variance partitioning index 0 (all seven experts), and
@@ -90,3 +90,9 @@ Before running the 11-GB packet, the audit still requires:
   the final stacked score.
 
 GPU and Lambda execution remain out of scope for this legacy CPU replay.
+
+The sanitized full-hash preflight record is
+[`SA2_SUBJECT02_PREFLIGHT.json`](SA2_SUBJECT02_PREFLIGHT.json). It passed every
+data and overwrite-safety check while correctly reporting
+`rng_gate.launch_allowed: false`. No directory or artifact was created on
+MIND.

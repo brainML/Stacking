@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "run_id": "pca_seed_sensitivity_s02_conv3",
+  "state": "planned",
+  "response_data_used": false,
+  "feature": {
+    "logical_id": "nsd_legacy/subject_02/alexnet_pooled/conv3",
+    "shape": [10000, 9600],
+    "dtype": "float32",
+    "bytes": 384000128,
+    "sha256": "61449e0ddf74e1e18677dc5f00706ccb9b05318c426d3a497fb21c6345872d46"
+  },
+  "pca": {
+    "n_components": 512,
+    "svd_solver": "auto",
+    "seeds": [0, 1337, 2026]
+  },
+  "probe": {
+    "row_policy": "linspace_unique",
+    "row_count": 256
+  },
+  "comparisons": [
+    "explained_variance_ratio_sum",
+    "principal_angle_cosines",
+    "subspace_chordal_distance",
+    "probe_gram_relative_frobenius_difference"
+  ],
+  "requested_resources": {
+    "partition": "cpu",
+    "cpus": 16,
+    "memory_gib": 64,
+    "walltime": "04:00:00",
+    "max_concurrent_jobs": 1
+  },
+  "output_namespace": "audit/pca_seed_sensitivity/subject_02/conv3"
+}

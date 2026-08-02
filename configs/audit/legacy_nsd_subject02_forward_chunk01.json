@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "run_id": "legacy_nsd_s02_forward_all_chunk01",
+  "estimator_contract": "legacy_reproduction",
+  "state": "planned",
+  "subject": 2,
+  "source_script": {
+    "logical_id": "historical_code/stack_vp.py",
+    "sha256": "dc5b23edccd09dc640f94ee8513180f111e82366e9096e4f82e15c5defc1de36"
+  },
+  "analysis": {
+    "direction": "forward",
+    "structured_subset_index": 0,
+    "feature_order": ["conv1", "conv2", "conv3", "conv4", "conv5", "fc6", "fc7"],
+    "voxel_start": 0,
+    "voxel_stop": 5000,
+    "pca_components": 512,
+    "pca_svd_solver": "auto",
+    "pca_random_state": null,
+    "pca_rng_classification": "unresolved_historical",
+    "outer_folds": 5,
+    "outer_fold_policy": "contiguous",
+    "inner_folds": 4,
+    "inner_fold_policy": "sklearn_kfold_contiguous",
+    "lambda_exponents": [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "partition_scaling": "independent_train_and_test_zscore",
+    "stacking_solver": "cvxopt_qp_simplex"
+  },
+  "inputs": [
+    {
+      "logical_id": "nsd_legacy/subject_02/older_cortical_average",
+      "shape": [10000, 107860],
+      "dtype": "float64",
+      "bytes": 8628800128,
+      "sha256": "3414a33e03fc883e9d290dc57cb5da6d713a9141ab28c54258524ffb820a1f1f"
+    },
+    {
+      "logical_id": "nsd_legacy/subject_02/alexnet_pooled/conv1",
+      "shape": [10000, 9216],
+      "dtype": "float32",
+      "bytes": 368640128,
+      "sha256": "9d2f981893075a7df6fb2a10ecd70f8a7c1958dcb5411475a1d1dd23144f3b9c"
+    },
+    {
+      "logical_id": "nsd_legacy/subject_02/alexnet_pooled/conv2",
+      "shape": [10000, 9408],
+      "dtype": "float32",
+      "bytes": 376320128,
+      "sha256": "01454fe4feb31597682282f9a727471d12488c0252d60ad6b9b667534b6d03eb"
+    },
+    {
+      "logical_id": "nsd_legacy/subject_02/alexnet_pooled/conv3",
+      "shape": [10000, 9600],
+      "dtype": "float32",
+      "bytes": 384000128,
+      "sha256": "61449e0ddf74e1e18677dc5f00706ccb9b05318c426d3a497fb21c6345872d46"
+    },
+    {
+      "logical_id": "nsd_legacy/subject_02/alexnet_pooled/conv4",
+      "shape": [10000, 9216],
+      "dtype": "float32",
+      "bytes": 368640128,
+      "sha256": "64c02ed12b80c36ac2a11a3bc916d74e54e769a580015c712cd72d0d2a6d8a58"
+    },
+    {
+      "logical_id": "nsd_legacy/subject_02/alexnet_pooled/conv5",
+      "shape": [10000, 9216],
+      "dtype": "float32",
+      "bytes": 368640128,
+      "sha256": "eef96f681c44d231f6fc2d17770229b21e8c1adaea02127e7ec3420d0fde1461"
+    },
+    {
+      "logical_id": "nsd_legacy/subject_02/alexnet_pooled/fc6",
+      "shape": [10000, 4096],
+      "dtype": "float32",
+      "bytes": 163840128,
+      "sha256": "5e308b38ebe0eda47cd71a77395a48303c11ae114357a6a7be920638e1bf4fc0"
+    },
+    {
+      "logical_id": "nsd_legacy/subject_02/alexnet_pooled/fc7",
+      "shape": [10000, 4096],
+      "dtype": "float32",
+      "bytes": 163840128,
+      "sha256": "66169373717e11802d4a122d848331245910af2854823b3092d57788c5da444d"
+    }
+  ],
+  "expected_outputs": [
+    {"logical_id": "legacy_output/r2s", "shape": [7, 5000], "dtype": "float64", "sha256": "e3eab7c036df35b81041f3f05970c30a68e42d82c3dfd7504852c14c95d6e426"},
+    {"logical_id": "legacy_output/stacked_r2s", "shape": [5000], "dtype": "float64", "sha256": "b844377d8196b2874ee34da0bec58573d83943d821d4b77dbe95fde29c6c79df"},
+    {"logical_id": "legacy_output/r2s_weighted", "shape": [7, 5000], "dtype": "float64", "sha256": "15bb0933b3b8aa55b5b2983e03c701362ab1c2a38d6cc72bc3335c0106454a5d"},
+    {"logical_id": "legacy_output/r2s_train", "shape": [7, 5000], "dtype": "float64", "sha256": "6be5f0b3ae7d5f22ac41726c396db5a54ff8e26785cace33e72ce14606506d0e"},
+    {"logical_id": "legacy_output/stacked_train", "shape": [5000], "dtype": "float64", "sha256": "f39934931eaf819e21a39f5b6a73e291cae0a06693c03b5f7710e6ab6ecec68a"},
+    {"logical_id": "legacy_output/S_average", "shape": [5000, 7], "dtype": "float64", "sha256": "aab8da8170dedb209d51eafac15967b04706a0344862f293f4d458ea8bcc4c66"}
+  ],
+  "output_namespace": "audit/legacy_reproduction/subject_02/forward_all/chunk_00000_05000"
+}

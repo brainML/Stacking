@@ -37,3 +37,16 @@ committed to this repository.
 A comparison record names two complete run manifests and reports differences
 for each intermediate quantity. A final score comparison alone is not
 sufficient for CPU/GPU parity.
+
+## Planned replay specifications
+
+Before a large run receives a completed run manifest, a public-safe replay
+specification freezes logical input IDs, hashes, shapes, historical behavior,
+expected artifact hashes, and RNG classification. Machine paths live in an
+ignored owner-only path map.
+
+`scripts/audit_replay_preflight.py` joins these two records read-only. It
+validates the source script, every input header/hash, and a fresh output
+namespace without creating that namespace. A passing data preflight does not
+override an unresolved RNG or authorization gate; `rng_gate.launch_allowed`
+is reported separately.
