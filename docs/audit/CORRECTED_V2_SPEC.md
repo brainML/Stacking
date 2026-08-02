@@ -97,3 +97,20 @@ score zero. A complete oracle result retains or hashes:
 The reference fixture must be bitwise deterministic within one environment,
 pass primal/dual prediction equivalence at `1e-10`, and pass simplex feasibility
 and KKT diagnostics at their frozen float64 tolerances before GPU parity work.
+
+## Artifact and uncertainty boundary
+
+Completed results are published as a fresh atomic directory containing one
+non-pickle `.npy` file per intermediate plus a JSON manifest. The manifest
+records every array's shape, dtype, content hash, transform identities, solver
+form, simplex diagnostics, and caller-supplied provenance. Validation reloads
+and independently hashes every array. Existing destinations are never
+overwritten.
+
+The first uncertainty primitive resamples held-out protected groups as blocks
+and reports the distribution of per-target signed-R2 differences between two
+already fitted predictions. It is deterministic for a supplied seed. This is
+conditional held-out outcome uncertainty; it does not represent training-set,
+split, participant, or model-zoo uncertainty and must not be described as
+such. Scientific analyses additionally require prospectively frozen repeated
+splits or a hierarchical resampling design appropriate to their claim.

@@ -65,6 +65,10 @@ The implementation-independent mathematical and artifact specification is
 frozen in [`CORRECTED_V2_SPEC.md`](CORRECTED_V2_SPEC.md). The first deterministic
 CPU float64 fixture and its intermediate hashes are recorded in
 [`CORRECTED_V2_FIXTURE_RESULT.json`](CORRECTED_V2_FIXTURE_RESULT.json).
+Atomic intermediate serialization and independent validation are implemented
+in `corrected_v2_artifacts.py`; deterministic held-out group bootstrap
+differences are implemented in `corrected_v2_uncertainty.py` with the
+conditional-outcome limitation stated explicitly in the specification.
 
 Mixture coefficients are predictive weights. With identical or duplicated
 experts, individual coefficients are nonidentifiable; equivalence is assessed
