@@ -64,6 +64,15 @@ e46fca15901196541b8921aa8c03ee9d662e7da085d852e13ebb01f89c7623c6
 Its row semantics and relationship to the 10,000-row participant arrays still
 require validation against official NSD identities.
 
+For participant 1, the three repeat-position columns identify 10,000 unique
+images and form an exact one-based partition of trial positions 1 through
+30,000. Converting these positions to a trial-ordered int64 NSD-ID sequence
+produces SHA-256:
+
+```text
+d86a79a8f06ebb57616eda68c8393c966996c8aed80f87d18d0ff13b3d217671
+```
+
 ## CORTEX findings
 
 CORTEX contains two distinct subject-1-oriented NSD trees rather than a mirror
@@ -81,6 +90,12 @@ The tree occupies approximately 8.2 GiB and includes:
 - session-level participant-1 response derivatives; and
 - extraction and subject-reading scripts whose provenance has not yet been
   audited.
+
+The participant-1 stimulus-index array contains 10,000 unique NSD IDs, and its
+canonical int64 sequence hash exactly matches the sequence derived
+independently from the MIND metadata. This closes the trial-order identity for
+that one artifact. It does not yet establish the row order of the MIND averaged
+response or feature arrays.
 
 ### Subject-1 beta tree
 
@@ -117,6 +132,15 @@ commits, working-tree diffs, notebooks, and untracked analysis artifacts must
 be inventoried independently before deciding which code generated each
 published result.
 
+The local historical archive adds another unresolved implementation question.
+The paper reports 1,024 PCA dimensions per AlexNet layer, while readily located
+eight-participant scripts use 512 dimensions. A few older subject-1 scripts use
+1,024 dimensions, but target different source paths or model variants. All of
+these scripts fit PCA to all 10,000 images before outer cross-validation. The
+exact scripts and PCA realization used for the published cohort therefore
+remain unidentified; the located code cannot yet be treated as the published
+pipeline.
+
 ## Storage observation
 
 The MIND NSD data volume is 97% occupied with approximately 38 GiB free, while
@@ -129,11 +153,11 @@ until that policy is confirmed.
 
 1. Identify the exact published NSD scripts, masks, PCA objects, and stimulus
    selection/order artifacts.
-2. Map the MIND 10,000 rows and the CORTEX 30,000 trial indices to official NSD
-   stimulus IDs and repeat/session identities.
+2. Extend the now-verified participant-1 trial sequence mapping to the row
+   order of the MIND averaged responses/features and to participants 2-8.
 3. Map cortical columns to official voxel spaces and ROI masks.
-4. Establish checkpoint and preprocessing provenance for the seven AlexNet
-   feature spaces.
+4. Establish checkpoint, PCA dimension, PCA fit partition, and preprocessing
+   provenance for the seven AlexNet feature spaces.
 5. Select a small list of critical files for full SHA-256 comparison; do not
    recursively hash the 100+ GiB trees.
 6. Mark NSD-synthetic paths as sealed in all private manifests and inventory
