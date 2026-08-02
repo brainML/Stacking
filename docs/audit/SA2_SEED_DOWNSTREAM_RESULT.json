@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "run_id": "legacy_seed_downstream_s02_fold00_v256",
+  "status": "completed_after_summary_recovery",
+  "response_data_used": true,
+  "scope": {
+    "subject": 2,
+    "experts": 7,
+    "initial_numpy_seeds": [0, 1337, 2026],
+    "outer_fold": 0,
+    "test_rows": 2000,
+    "voxel_count": 256,
+    "voxel_selection_uses_response_values": false,
+    "voxel_indices_sha256": "dfd3224c30346d5f1d3007fc2b1a83bcadf739324db279351ea61723e067b559"
+  },
+  "environment": {
+    "python": "3.8.5",
+    "numpy": "1.23.0",
+    "scipy": "1.5.2",
+    "sklearn": "0.23.2",
+    "cvxopt": "1.2.0"
+  },
+  "provenance": {
+    "gate_config_sha256": "d9a59be76825dbeeeed2bb407c278380e8044b2247f2907d7b09c85fe2af73e6",
+    "model_runner_sha256": "23d3dc667931219086d93182a70a58c6f16a36f1593a92a11c03d3f94778a160",
+    "corrected_runner_sha256": "be7c274ef341b9bb9ae9f07666200f8da5eed0c80a2cd437d63cc5d81b7f1fb5",
+    "summary_finalizer_sha256": "e693a3d847edf85c5d79e2153ed5d004ff1194a4b3e70daa4759eb9b9ae3c257",
+    "private_summary_sha256": "a3c05a6cacfdda6d09fafb73639e38ee79533fe3f7f9ceeb9a8ddebb2ef290c7"
+  },
+  "recovery": {
+    "model_refit": false,
+    "reason": "All three seed artifacts completed before a package-metadata name-shadowing error prevented summary assembly. The summary was reconstructed from validated artifacts."
+  },
+  "pairwise": [
+    {
+      "seeds": [0, 1337],
+      "median_voxel_prediction_correlation": 0.9423624777143524,
+      "p05_voxel_prediction_correlation": 0.6398652230826521,
+      "median_absolute_stacked_signed_r2_delta": 0.0005389213677612359,
+      "p95_absolute_stacked_signed_r2_delta": 0.0042284654185889,
+      "max_absolute_stacked_signed_r2_delta": 0.03234619919324011,
+      "median_weight_l1_delta": 0.2446859069502908,
+      "p95_weight_l1_delta": 1.7481798285486967,
+      "top_weight_expert_agreement": 0.78125,
+      "predictive_stability_pass": false,
+      "interpretive_instability_flag": true
+    },
+    {
+      "seeds": [0, 2026],
+      "median_voxel_prediction_correlation": 0.9410247837002532,
+      "p05_voxel_prediction_correlation": 0.597089070334659,
+      "median_absolute_stacked_signed_r2_delta": 0.0004888823590110114,
+      "p95_absolute_stacked_signed_r2_delta": 0.005891257959708185,
+      "max_absolute_stacked_signed_r2_delta": 0.03306330996206486,
+      "median_weight_l1_delta": 0.2976735229708936,
+      "p95_weight_l1_delta": 1.992334988073437,
+      "top_weight_expert_agreement": 0.72265625,
+      "predictive_stability_pass": false,
+      "interpretive_instability_flag": true
+    },
+    {
+      "seeds": [1337, 2026],
+      "median_voxel_prediction_correlation": 0.9418300025710735,
+      "p05_voxel_prediction_correlation": 0.6314155055697614,
+      "median_absolute_stacked_signed_r2_delta": 0.0005312073295754005,
+      "p95_absolute_stacked_signed_r2_delta": 0.004257033496301493,
+      "max_absolute_stacked_signed_r2_delta": 0.03262296815745025,
+      "median_weight_l1_delta": 0.2298288464565276,
+      "p95_weight_l1_delta": 1.8934442995138472,
+      "top_weight_expert_agreement": 0.76171875,
+      "predictive_stability_pass": false,
+      "interpretive_instability_flag": true
+    }
+  ],
+  "decision": {
+    "predictive_stability_all_pairs": false,
+    "interpretive_instability_any_pair": true,
+    "historical_exact_reproduction_possible_from_fresh_pca": false,
+    "interpretation": "Aggregate signed-R2 differences are small, but voxelwise predictions and mixture weights fail the prospectively frozen stability criteria."
+  }
+}

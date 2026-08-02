@@ -12,7 +12,7 @@ import os
 import platform
 import tempfile
 import time
-from importlib import metadata
+from importlib import metadata as package_metadata
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Iterable
@@ -356,8 +356,8 @@ def run(
         "environment": {
             "python": platform.python_version(),
             "numpy": np.__version__,
-            "scipy": metadata.version("scipy"),
-            "sklearn": metadata.version("scikit-learn"),
+            "scipy": package_metadata.version("scipy"),
+            "sklearn": package_metadata.version("scikit-learn"),
             "cvxopt": getattr(importlib.import_module("cvxopt"), "__version__", "unknown"),
         },
         "seed_runs": seed_metadata,

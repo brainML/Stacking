@@ -75,9 +75,38 @@ by evenly spanning `[0, 5000)` without reading responses or historical outputs.
 The primary gate tests held-out prediction correlations and stacked signed-R2
 differences. Weight L1 differences and top-expert agreement are reported as
 interpretive-instability flags, not used to rescue or reject predictive
-stability. Full response-derived arrays remain private on MIND. One bounded
-CPU job for this gate was submitted on 2026-08-02 and began running
-immediately; its scheduler identity and paths are private.
+stability. Full response-derived arrays remain private on MIND.
+
+## Downstream result
+
+The bounded downstream gate completed all three seed fits. Its batch process
+then exited while assembling the summary because a local variable shadowed
+Python's package-metadata module. All three immutable seed artifacts were
+already present; the validated summary was reconstructed from them without a
+model refit. The runner is corrected and a dedicated recovery finalizer is
+versioned.
+
+Every seed pair failed the prospectively frozen predictive gate and raised the
+interpretive-instability flag:
+
+- median voxelwise prediction correlation: 0.9410--0.9424;
+- fifth-percentile prediction correlation: 0.5971--0.6399;
+- median absolute stacked signed-R2 difference: 0.00049--0.00054;
+- 95th-percentile signed-R2 difference: 0.00423--0.00589;
+- median mixture-weight L1 difference: 0.2298--0.2977; and
+- top-weight expert agreement: 72.3%--78.1%.
+
+Thus aggregate accuracy is relatively stable while voxelwise predictions and
+the purportedly interpretable mixture weights are not. A fresh PCA draw cannot
+serve as an exact historical reconstruction, and choosing the seed closest to
+the published map would be post hoc. Published artifacts remain the sole
+`published_historical` tier; any new seeded execution must be labeled
+`legacy_reconstruction`.
+
+Sanitized aggregate results and provenance hashes are in
+[`SA2_SEED_DOWNSTREAM_RESULT.json`](SA2_SEED_DOWNSTREAM_RESULT.json). The next
+method-development gate is the deterministic `corrected_v2` CPU float64 oracle,
+with seed uncertainty retained as an explicit sensitivity analysis.
 
 The diagnostic is configured in
 `configs/audit/pca_seed_sensitivity_subject02_conv3.json`. It requests one
