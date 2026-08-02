@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "run_id": "legacy_seed_downstream_s02_fold00_v256",
+  "state": "planned",
+  "estimator_contract": "legacy_reconstruction_seed_sensitivity",
+  "response_data_used": true,
+  "replay_manifest": "configs/audit/legacy_nsd_subject02_forward_chunk01.json",
+  "feature_order": ["conv1", "conv2", "conv3", "conv4", "conv5", "fc6", "fc7"],
+  "pca": {
+    "n_components": 512,
+    "svd_solver": "auto",
+    "initial_numpy_seeds": [0, 1337, 2026],
+    "random_state_argument": null,
+    "fit_order": "historical_sequential_single_PCA_object"
+  },
+  "outer_evaluation": {
+    "n_folds": 5,
+    "fold": 0,
+    "fold_policy": "historical_contiguous",
+    "train_rows": 8000,
+    "test_rows": 2000
+  },
+  "voxel_selection": {
+    "policy": "linspace_unique",
+    "source_chunk_start": 0,
+    "source_chunk_stop": 5000,
+    "count": 256,
+    "uses_response_values": false,
+    "uses_historical_outputs": false
+  },
+  "ridge": {
+    "inner_folds": 4,
+    "inner_fold_policy": "historical_sklearn_kfold_contiguous",
+    "lambda_exponents": [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "solver": "historical_plain_primal_inverse"
+  },
+  "stacking": {
+    "solver": "historical_cvxopt_simplex_qp",
+    "experts": 7
+  },
+  "decision_gates": {
+    "predictive_stability_all_pairs": {
+      "median_voxel_prediction_correlation_min": 0.99,
+      "p05_voxel_prediction_correlation_min": 0.95,
+      "median_absolute_stacked_signed_r2_delta_max": 0.005,
+      "p95_absolute_stacked_signed_r2_delta_max": 0.02
+    },
+    "interpretive_instability_flags": {
+      "top_weight_expert_agreement_min": 0.90,
+      "median_weight_l1_delta_max": 0.10
+    }
+  },
+  "artifact_policy": {
+    "full_response_derived_arrays": "private_mind_only",
+    "public_artifact": "aggregate_metrics_and_provenance_only",
+    "historical_output_comparison": false
+  },
+  "requested_resources": {
+    "backend": "MIND_CPU",
+    "partition": "cpu",
+    "cpus": 16,
+    "memory_gib": 64,
+    "walltime": "08:00:00",
+    "max_concurrent_jobs": 1
+  }
+}

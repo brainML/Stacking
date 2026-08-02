@@ -69,6 +69,16 @@ restrict downstream evaluation to one outer fold and 256 prospectively fixed
 voxels. Do not search a large seed space for the seed that best matches the
 published outcomes.
 
+That downstream gate is prospectively frozen in
+`configs/audit/legacy_seed_downstream_subject02.json`. Voxel indices are chosen
+by evenly spanning `[0, 5000)` without reading responses or historical outputs.
+The primary gate tests held-out prediction correlations and stacked signed-R2
+differences. Weight L1 differences and top-expert agreement are reported as
+interpretive-instability flags, not used to rescue or reject predictive
+stability. Full response-derived arrays remain private on MIND. One bounded
+CPU job for this gate was submitted on 2026-08-02 and began running
+immediately; its scheduler identity and paths are private.
+
 The diagnostic is configured in
 `configs/audit/pca_seed_sensitivity_subject02_conv3.json`. It requests one
 Slurm CPU job, 16 CPUs, 64 GiB RAM, four hours, and no concurrency. The bounded
