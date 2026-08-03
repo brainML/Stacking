@@ -128,7 +128,7 @@ def ridge_svd(X, Y, lmbda):
     """
     U, s, Vt = svd(X, full_matrices=False)
     d = s / (s**2 + lmbda)
-    return np.dot(Vt, np.diag(d).dot(U.T.dot(Y)))
+    return Vt.T @ (d[:, None] * (U.T @ Y))
 
 
 def ridge_by_lambda_svd(X, Y, Xval, Yval, lambdas=np.array([0.1, 1, 10, 100, 1000])):

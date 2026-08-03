@@ -4,6 +4,7 @@ from unittest import mock
 import numpy as np
 
 import concatenate
+import ridge_tools
 import stacking
 
 
@@ -43,6 +44,22 @@ class UtilityTests(unittest.TestCase):
 
         self.assertEqual(indices.dtype, np.intp)
         np.testing.assert_array_equal(indices, expected)
+
+    def test_svd_ridge_supports_wide_feature_matrices(self):
+        rng = np.random.default_rng(4)
+        features = rng.normal(size=(8, 13))
+        targets = rng.normal(size=(8, 3))
+
+        observed = ridge_tools.ridge_svd(features, targets, 0.5)
+        expected = ridge_tools.ridge(features, targets, 0.5)
+
+        self.assertEqual(observed.shape, (13, 3))
+        np.testing.assert_allclose(
+            features @ observed,
+            features @ expected,
+            rtol=1e-10,
+            atol=1e-10,
+        )
 
 
 class StackingFallbackTests(unittest.TestCase):

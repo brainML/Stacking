@@ -2,41 +2,50 @@
 
 ## Overview
 
-This is a Python package that provides an implementation of stacked regression for functional MRI (fMRI) data. The package uses ridge regression to train models on multiple feature spaces and combines the predictions from these models using a weighted linear combination. The weights are learned using quadratic programming.
+This project provides an implementation of stacked regression for functional
+MRI (fMRI) data. It trains ridge-regression models on multiple feature spaces
+and combines their predictions with weights learned by quadratic programming.
 
-> Here we presents an approach for brain mapping based on two proposed methods: stacking different encoding models and structured variance partitioning. This package is useful for researchers interested in aligning brain activity with different layers of a neural network, or with other types of correlated feature spaces.
+The code supports brain mapping with stacked encoding models and structured
+variance partitioning. It can be used with neural-network representations or
+other correlated feature spaces.
 
 > Relating brain activity associated with a complex stimulus to different attributes of that stimulus is a powerful approach for constructing functional brain maps. However, when stimuli are naturalistic, their attributes are often correlated. These different attributes can act as confounders for each other and complicate the interpretability of brain maps. Correlations between attributes also impact the robustness of statistical estimators.
 
 > Each encoding model uses as input a feature space that describes a different stimulus attribute. The algorithm learns to predict the activity of a voxel as a linear combination of the individual encoding models. We show that the resulting unified model can predict held-out brain activity better or at least as well as the individual encoding models. Further, the weights of the linear combination are readily interpretable; they show the importance of each feature space for predicting a voxel.
 
-> We build on our stacking models to introduce a new variant of variance partitioning in which we rely on the known relationships between features during hypothesis testing. This approach, which we term structured variance partitioning, constraints the size of the hypothesis space and allows us to ask targeted questions about the similarity between feature spaces and brain regions even in the presence of correlations between the feature spaces.
+Structured variance partitioning uses known relationships between features to
+constrain the hypothesis space and support targeted comparisons between feature
+spaces and brain regions.
 
 > We validate our approach in simulation, showcase its brain mapping potential on fMRI data, and release a Python package.
 
 ## Installation
-To use this code, simply install with pip:
+Install the runtime dependencies, then run the examples from the repository
+root:
 
 
 ```bash
-pip install stacking_fmri
+python -m pip install numpy scipy scikit-learn
 ```
 
 
 ## Usage
-Here is an example of how to use the `stacking_fmri` function:
+Here is a self-contained example using `stacking_fmri`:
 ```python
-from stacking_fmri import stacking_fmri
-from sklearn.datasets import make_regression
+import numpy as np
 
-# Generate synthetic data
-X_train, y_train = make_regression(n_samples=50, n_features=1000, random_state=42)
-X_test, y_test = make_regression(n_samples=50, n_features=1000, random_state=43)
+from stacking import stacking_fmri
 
-# Generate random feature spaces
+# Generate synthetic response matrices and feature spaces.
+rng = np.random.default_rng(42)
+n_train, n_test, n_targets = 50, 20, 12
+train_data = rng.normal(size=(n_train, n_targets))
+test_data = rng.normal(size=(n_test, n_targets))
+
 n_features = 5
-train_features = [np.random.randn(X_train.shape[0], 10) for _ in range(n_features)]
-test_features = [np.random.randn(X_test.shape[0], 10) for _ in range(n_features)]
+train_features = [rng.normal(size=(n_train, 10)) for _ in range(n_features)]
+test_features = [rng.normal(size=(n_test, 10)) for _ in range(n_features)]
 
 # Train and test the model
 (
@@ -47,12 +56,11 @@ test_features = [np.random.randn(X_test.shape[0], 10) for _ in range(n_features)
     stacked_train_r2s,
     S,
 ) = stacking_fmri(
-    X_train,
-    X_test,
+    train_data,
+    test_data,
     train_features,
     test_features,
     method="cross_val_ridge",
-    score_f=np.mean_squared_error,
 )
 
 print("R2 scores for each feature and voxel:")
@@ -80,14 +88,9 @@ Project is: _complete_  -->
 Contributions are welcome! Please feel free to submit a pull request with your changes or open an issue to report a bug or suggest a new feature.
 
 
-## Contact
-Created by [@lrg1213] - feel free to contact me!
-
-
 ## References
-<a id="1">[1]</a> 
-Ruogu Lin, Thomas Naselaris, Kendrick Kay, and Leila Wehbe (2023). 
-Stacked regressions and structured variance partitioning for interpretable brain maps.
-
+Ruogu Lin, Thomas Naselaris, Kendrick Kay, and Leila Wehbe (2023).
+*Stacked regressions and structured variance partitioning for interpretable
+brain maps*.
 
 
